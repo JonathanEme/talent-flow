@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\V1\ApplicationController;
 use App\Http\Controllers\Api\V1\CandidateController;
 use App\Http\Controllers\Api\V1\CandidateSkillController;
 use App\Http\Controllers\Api\V1\CompanyController;
+use App\Http\Controllers\Api\V1\InterviewController;
+use App\Http\Controllers\Api\V1\InterviewFeedbackController;
 use App\Http\Controllers\Api\V1\PositionController;
 use App\Http\Controllers\Api\V1\PositionMatchingController;
 use App\Http\Controllers\Api\V1\PositionRequirementController;
@@ -16,7 +18,9 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('candidates', CandidateController::class)->only(['index', 'store', 'show']);
     Route::apiResource('applications', ApplicationController::class)->only(['index', 'store', 'show']);
     Route::apiResource('skills', SkillController::class)->only(['index', 'store']);
+    Route::apiResource('interviews', InterviewController::class)->only(['index', 'store', 'show', 'update']);
 
+    // Mover de etapa
     Route::patch('applications/{application}/stage', [ApplicationController::class, 'updateStage']);
     
     // Skills & Requirements
@@ -26,4 +30,7 @@ Route::prefix('v1')->group(function () {
     // Matching Engine
     Route::get('positions/{position}/recommendations', [PositionMatchingController::class, 'recommendations']);
     Route::get('positions/{position}/candidates/{candidate}/match', [PositionMatchingController::class, 'compare']);
+
+    // Interview Feedback
+    Route::post('interviews/{interview}/feedback', [InterviewFeedbackController::class, 'store']);
 });

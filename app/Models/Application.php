@@ -30,4 +30,9 @@ class Application extends Model
     {
         return $this->belongsTo(Candidate::class);
     }
+
+    public function interviews(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Interview::class);
+    }
 }
