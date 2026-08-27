@@ -48,4 +48,21 @@ class Position extends Model
             ->withPivot(['id', 'status', 'stage', 'applied_at'])
             ->withTimestamps();
     }
+
+    public function skills(): BelongsToMany
+    {
+        return $this->belongsToMany(Skill::class, 'position_requirements')
+            ->withPivot(['is_mandatory', 'min_years_experience', 'expected_level'])
+            ->withTimestamps();
+    }
+
+    public function mandatorySkills(): BelongsToMany
+    {
+        return $this->skills()->wherePivot('is_mandatory', true);
+    }
+
+    public function optionalSkills(): BelongsToMany
+    {
+        return $this->skills()->wherePivot('is_mandatory', false);
+    }
 }

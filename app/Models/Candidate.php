@@ -38,4 +38,12 @@ class Candidate extends Model
             ->withPivot(['id', 'status', 'stage', 'applied_at'])
             ->withTimestamps();
     }
+
+
+    public function skills(): BelongsToMany
+    {
+        return $this->belongsToMany(Skill::class, 'candidate_skills')
+            ->withPivot(['years_experience', 'level'])
+            ->withTimestamps();
+    }
 }
