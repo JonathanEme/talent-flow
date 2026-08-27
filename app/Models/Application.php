@@ -35,4 +35,9 @@ class Application extends Model
     {
         return $this->hasMany(Interview::class);
     }
+
+    public function stageLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ApplicationStageLog::class)->orderBy('created_at', 'desc');
+    }
 }

@@ -19,6 +19,7 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('applications', ApplicationController::class)->only(['index', 'store', 'show']);
     Route::apiResource('skills', SkillController::class)->only(['index', 'store']);
     Route::apiResource('interviews', InterviewController::class)->only(['index', 'store', 'show', 'update']);
+    Route::get('applications/{application}/timeline', [ApplicationController::class, 'timeline']);
 
     // Mover de etapa
     Route::patch('applications/{application}/stage', [ApplicationController::class, 'updateStage']);
