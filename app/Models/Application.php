@@ -40,4 +40,14 @@ class Application extends Model
     {
         return $this->hasMany(ApplicationStageLog::class)->orderBy('created_at', 'desc');
     }
+
+    public function offers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Offer::class)->latest();
+    }
+
+    public function latestOffer(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Offer::class)->latestOfMany();
+    }
 }

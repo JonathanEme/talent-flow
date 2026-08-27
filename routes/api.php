@@ -10,9 +10,12 @@ use App\Http\Controllers\Api\V1\PositionController;
 use App\Http\Controllers\Api\V1\PositionMatchingController;
 use App\Http\Controllers\Api\V1\PositionRequirementController;
 use App\Http\Controllers\Api\V1\SkillController;
+use App\Http\Controllers\Api\V1\OfferController;
+use App\Http\Controllers\Api\V1\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
+    Route::get('dashboard', [DashboardController::class, 'stats']);
     Route::apiResource('companies', CompanyController::class)->only(['index', 'store', 'show']);
     Route::apiResource('positions', PositionController::class)->only(['index', 'store', 'show']);
     Route::apiResource('candidates', CandidateController::class)->only(['index', 'store', 'show']);
@@ -20,6 +23,8 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('skills', SkillController::class)->only(['index', 'store']);
     Route::apiResource('interviews', InterviewController::class)->only(['index', 'store', 'show', 'update']);
     Route::get('applications/{application}/timeline', [ApplicationController::class, 'timeline']);
+    Route::apiResource('offers', OfferController::class)->only(['index', 'store', 'show']);
+    Route::patch('offers/{offer}/status', [OfferController::class, 'updateStatus']);
 
     // Mover de etapa
     Route::patch('applications/{application}/stage', [ApplicationController::class, 'updateStage']);
