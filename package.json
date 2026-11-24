@@ -5,6 +5,7 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
+        "typecheck": "vue-tsc --noEmit",
         "dev:all": "concurrently -c \"#6366f1,#0ea5e9\" \"php artisan serve\" \"vite\" --names=laravel,vite"
     },
     "devDependencies": {
@@ -15,7 +16,7 @@
         "laravel-vite-plugin": "^2.0.0",
         "postcss": "^8.5.26",
         "tailwindcss": "^3.4.19",
-        "typescript": "^5.0.0",
+        "typescript": "^5.9.3",
         "vite": "^7.0.7",
         "vue-tsc": "^3.3.11"
     },

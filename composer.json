@@ -55,6 +55,7 @@
         "quality": [
             "@lint",
             "@test",
+            "npm run typecheck",
             "npm run build"
         ],
         "post-autoload-dump": [

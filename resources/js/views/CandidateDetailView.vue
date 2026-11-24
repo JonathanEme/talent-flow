@@ -30,7 +30,7 @@ onMounted(async () => {
 
     <div v-else-if="candidate" class="space-y-6">
       <!-- Encabezado de Perfil -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 class="text-2xl font-bold text-slate-900">{{ candidate.first_name }} {{ candidate.last_name }}</h1>
@@ -56,7 +56,7 @@ onMounted(async () => {
       </div>
 
       <!-- Historial de Postulaciones -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
           <Briefcase :size="18" class="text-indigo-600" /> Postulaciones Activas e Históricas
         </h2>
@@ -81,7 +81,7 @@ onMounted(async () => {
 
             <router-link 
               :to="`/applications/${app.id}/timeline`" 
-              class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-xs"
+              class="bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
             >
               <History :size="14" /> Ver Trazabilidad
             </router-link>

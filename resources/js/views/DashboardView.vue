@@ -51,7 +51,7 @@ onMounted(loadDashboard);
     <div v-else class="space-y-6">
       <!-- KPIs -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-xs">
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-sm">
           <div>
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Vacantes Abiertas</span>
             <div class="text-3xl font-black text-slate-900 mt-1">{{ data.kpis.open_positions }}</div>
@@ -61,7 +61,7 @@ onMounted(loadDashboard);
           </div>
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-xs">
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-sm">
           <div>
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Candidatos</span>
             <div class="text-3xl font-black text-slate-900 mt-1">{{ data.kpis.total_candidates }}</div>
@@ -71,7 +71,7 @@ onMounted(loadDashboard);
           </div>
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-xs">
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-sm">
           <div>
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">En Selección Activa</span>
             <div class="text-3xl font-black text-slate-900 mt-1">{{ data.kpis.active_applications }}</div>
@@ -81,7 +81,7 @@ onMounted(loadDashboard);
           </div>
         </div>
 
-        <div class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-xs">
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-sm">
           <div>
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Próx. Entrevistas</span>
             <div class="text-3xl font-black text-emerald-600 mt-1">{{ data.kpis.upcoming_interviews }}</div>
@@ -93,7 +93,7 @@ onMounted(loadDashboard);
       </div>
 
       <!-- Embudo de Candidaturas -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <h2 class="text-base font-bold text-slate-900 mb-4">Embudo de Candidaturas por Etapa</h2>
         
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -127,7 +127,7 @@ onMounted(loadDashboard);
       <!-- Bloque Doble -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Próximas Entrevistas -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
               <Calendar class="text-indigo-600" :size="18" /> Agenda Inmediata
@@ -159,7 +159,7 @@ onMounted(loadDashboard);
                 v-if="intw.location_or_link" 
                 :href="intw.location_or_link" 
                 target="_blank"
-                class="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-lg text-xs font-medium transition shadow-xs"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-lg text-xs font-medium transition shadow-sm"
               >
                 <Video :size="14" />
               </a>
@@ -168,7 +168,7 @@ onMounted(loadDashboard);
         </div>
 
         <!-- Búsquedas Activas -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
               <Briefcase class="text-indigo-600" :size="18" /> Búsquedas Activas

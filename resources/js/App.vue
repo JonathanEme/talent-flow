@@ -28,7 +28,7 @@ const signOut = async () => {
 <template>
   <div class="min-h-screen flex flex-col bg-slate-50 text-slate-800">
     <!-- Header Navbar -->
-    <header v-if="route.path !== '/login'" class="border-b border-slate-200 bg-white/90 backdrop-blur sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between shadow-xs">
+    <header v-if="route.path !== '/login'" class="border-b border-slate-200 bg-white/90 backdrop-blur sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between shadow-sm">
       <div class="flex items-center gap-3">
         <div class="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-md shadow-indigo-600/20">
           TF

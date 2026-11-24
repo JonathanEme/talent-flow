@@ -72,7 +72,7 @@ const saveCompany = async () => {
 
       <button 
         @click="showModal = true"
-        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition shadow-xs"
+        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition shadow-sm"
       >
         <Plus :size="16" /> Nueva Empresa
       </button>
@@ -93,7 +93,7 @@ const saveCompany = async () => {
       <div 
         v-for="c in companies" 
         :key="c.id"
-        class="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between shadow-xs hover:shadow-md hover:border-slate-300 transition"
+        class="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between shadow-sm hover:shadow-md hover:border-slate-300 transition"
       >
         <div>
           <h2 class="text-base font-bold text-slate-900">{{ c.name }}</h2>
@@ -122,7 +122,7 @@ const saveCompany = async () => {
     </template>
 
     <!-- Modal Nueva Empresa -->
-    <div v-if="showModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div v-if="showModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="company-modal-title">
         <div class="flex justify-between items-center mb-4">
           <h3 id="company-modal-title" class="text-base font-bold text-slate-900">Registrar Empresa</h3>
@@ -168,7 +168,7 @@ const saveCompany = async () => {
 
           <div class="flex justify-end gap-2 pt-2">
             <button type="button" @click="showModal = false" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">Cancelar</button>
-            <button type="submit" :disabled="saving" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-xs">
+            <button type="submit" :disabled="saving" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-sm">
               {{ saving ? 'Guardando...' : 'Crear Empresa' }}
             </button>
           </div>

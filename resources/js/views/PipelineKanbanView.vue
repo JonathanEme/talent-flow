@@ -165,7 +165,7 @@ const scheduleInterview = async () => {
         <select 
           v-model="selectedPositionId" 
           @change="filterByPosition"
-          class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg px-3.5 py-2 shadow-xs outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-medium"
+          class="bg-white border border-slate-300 text-slate-800 text-sm rounded-lg px-3.5 py-2 shadow-sm outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-medium"
         >
           <option :value="null">Todas las posiciones</option>
           <option v-for="pos in positions" :key="pos.id" :value="pos.id">
@@ -190,7 +190,7 @@ const scheduleInterview = async () => {
       <div 
         v-for="stg in stages" 
         :key="stg.key" 
-        class="border rounded-2xl p-3.5 flex flex-col min-h-[540px] shadow-xs"
+        class="border rounded-2xl p-3.5 flex flex-col min-h-[540px] shadow-sm"
         :class="stg.color"
       >
         <div class="flex justify-between items-center mb-3">
@@ -205,7 +205,7 @@ const scheduleInterview = async () => {
           <div 
             v-for="app in getApplicationsByStage(stg.key)" 
             :key="app.id"
-            class="bg-white border border-slate-200/80 rounded-xl p-4 shadow-xs hover:shadow-md hover:border-slate-300 transition flex flex-col justify-between gap-3"
+            class="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition flex flex-col justify-between gap-3"
           >
             <div>
               <div class="flex justify-between items-start">
@@ -277,7 +277,7 @@ const scheduleInterview = async () => {
     </template>
 
     <!-- Modal Entrevista -->
-    <div v-if="showInterviewModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+    <div v-if="showInterviewModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="interview-modal-title">
         <div class="flex justify-between items-center mb-4">
           <h3 id="interview-modal-title" class="text-base font-bold text-slate-900">Agendar Entrevista</h3>
@@ -319,7 +319,7 @@ const scheduleInterview = async () => {
 
           <div class="flex justify-end gap-2 pt-2">
             <button type="button" @click="showInterviewModal = false" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">Cancelar</button>
-            <button type="submit" :disabled="savingInterview" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-xs">
+            <button type="submit" :disabled="savingInterview" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-sm">
               {{ savingInterview ? 'Guardando...' : 'Confirmar Entrevista' }}
             </button>
           </div>
