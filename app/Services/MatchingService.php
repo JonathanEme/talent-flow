@@ -20,6 +20,7 @@ class MatchingService
             return [
                 'candidate_id' => $candidate->id,
                 'candidate_name' => "{$candidate->first_name} {$candidate->last_name}",
+                'email' => $candidate->email,
                 'overall_score' => 100,
                 'meets_all_mandatory' => true,
                 'mandatory_matched' => 0,
@@ -106,13 +107,14 @@ class MatchingService
             return $this->calculateMatch($candidate, $position);
         })
         // Ordenamos: primero los que cumplen todos los obligatorios, luego por score descendente
-        ->sort(function ($a, $b) {
-            if ($a['meets_all_mandatory'] === $b['meets_all_mandatory']) {
-                return $b['overall_score'] <=> $a['overall_score'];
-            }
-            return $b['meets_all_mandatory'] <=> $a['meets_all_mandatory'];
-        })
-        ->values()
-        ->take($limit);
+            ->sort(function ($a, $b) {
+                if ($a['meets_all_mandatory'] === $b['meets_all_mandatory']) {
+                    return $b['overall_score'] <=> $a['overall_score'];
+                }
+
+                return $b['meets_all_mandatory'] <=> $a['meets_all_mandatory'];
+            })
+            ->values()
+            ->take($limit);
     }
 }

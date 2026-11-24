@@ -3,23 +3,19 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\SyncCandidateSkillsRequest;
+use App\Http\Resources\Api\V1\CandidateResource;
 use App\Models\Candidate;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class CandidateSkillController extends Controller
 {
-    public function sync(Request $request, Candidate $candidate): JsonResponse
+    public function sync(SyncCandidateSkillsRequest $request, Candidate $candidate): JsonResponse
     {
-        $validated = $request->validate([
-            'skills' => ['required', 'array'],
-            'skills.*.skill_id' => ['required', 'exists:skills,id'],
-            'skills.*.years_experience' => ['nullable', 'integer', 'min:0'],
-            'skills.*.level' => ['nullable', 'string', 'in:beginner,intermediate,advanced,expert'],
-        ]);
+        $this->ensureCandidate($candidate);
 
         $syncData = [];
-        foreach ($validated['skills'] as $skill) {
+        foreach ($request->validated('skills') as $skill) {
             $syncData[$skill['skill_id']] = [
                 'years_experience' => $skill['years_experience'] ?? 1,
                 'level' => $skill['level'] ?? 'intermediate',
@@ -30,7 +26,7 @@ class CandidateSkillController extends Controller
 
         return response()->json([
             'message' => 'Candidate skills updated successfully.',
-            'data' => $candidate->load('skills'),
+            'data' => new CandidateResource($candidate->load('skills')),
         ]);
     }
 }

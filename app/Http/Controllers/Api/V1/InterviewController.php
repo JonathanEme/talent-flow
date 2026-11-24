@@ -3,15 +3,20 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\InterviewIndexRequest;
+use App\Http\Requests\Api\V1\InterviewStoreRequest;
+use App\Http\Requests\Api\V1\InterviewUpdateRequest;
+use App\Http\Resources\Api\V1\InterviewResource;
 use App\Models\Application;
 use App\Models\Interview;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class InterviewController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(InterviewIndexRequest $request): JsonResponse
     {
+        $validated = $request->validated();
         $query = $this->scopeInterviews(Interview::query())->with([
             'application.candidate',
             'application.position',
@@ -19,43 +24,37 @@ class InterviewController extends Controller
             'feedbacks',
         ]);
 
-        if ($request->filled('application_id')) {
-            $query->where('application_id', $request->query('application_id'));
+        if (isset($validated['application_id'])) {
+            $query->where('application_id', $validated['application_id']);
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->query('status'));
+        if (isset($validated['status'])) {
+            $query->where('status', $validated['status']);
         }
 
-        if ($request->filled('scheduled_date')) {
-            $query->whereDate('scheduled_at', $request->query('scheduled_date'));
+        if (isset($validated['scheduled_date'])) {
+            $query->whereDate('scheduled_at', $validated['scheduled_date']);
         }
 
-        return response()->json([
-            'data' => $query->orderBy('scheduled_at', 'asc')->paginate(20),
-        ]);
+        return $this->paginatedResponse(InterviewResource::collection($query->orderBy('scheduled_at', 'asc')->paginate(20)));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(InterviewStoreRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'application_id' => ['required', 'exists:applications,id'],
-            'interviewer_id' => ['nullable', 'exists:users,id'],
-            'type' => ['required', 'in:screening,hr,technical,client,final'],
-            'scheduled_at' => ['required', 'date', 'after:now'],
-            'duration_minutes' => ['nullable', 'integer', 'min:15', 'max:240'],
-            'location_or_link' => ['nullable', 'string', 'max:255'],
-            'notes' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
 
         $this->ensureApplication(Application::findOrFail($validated['application_id']));
+
+        if (isset($validated['interviewer_id'])) {
+            $this->ensureCompany((int) User::findOrFail($validated['interviewer_id'])->company_id);
+        }
 
         $interview = Interview::create(array_merge($validated, [
             'interviewer_id' => $validated['interviewer_id'] ?? auth()->id(),
         ]));
 
         return response()->json([
-            'data' => $interview->load(['application.candidate', 'application.position', 'interviewer']),
+            'data' => new InterviewResource($interview->load(['application.candidate', 'application.position', 'interviewer'])),
         ], 201);
     }
 
@@ -64,26 +63,18 @@ class InterviewController extends Controller
         $this->ensureInterview($interview);
 
         return response()->json([
-            'data' => $interview->load(['application.candidate', 'application.position', 'interviewer', 'feedbacks.evaluator']),
+            'data' => new InterviewResource($interview->load(['application.candidate', 'application.position', 'interviewer', 'feedbacks.evaluator'])),
         ]);
     }
 
-    public function update(Request $request, Interview $interview): JsonResponse
+    public function update(InterviewUpdateRequest $request, Interview $interview): JsonResponse
     {
         $this->ensureInterview($interview);
 
-        $validated = $request->validate([
-            'scheduled_at' => ['nullable', 'date'],
-            'duration_minutes' => ['nullable', 'integer', 'min:15', 'max:240'],
-            'location_or_link' => ['nullable', 'string', 'max:255'],
-            'status' => ['nullable', 'in:scheduled,completed,canceled,no_show'],
-            'notes' => ['nullable', 'string'],
-        ]);
-
-        $interview->update($validated);
+        $interview->update($request->validated());
 
         return response()->json([
-            'data' => $interview->fresh(['application.candidate', 'interviewer', 'feedbacks']),
+            'data' => new InterviewResource($interview->fresh(['application.candidate', 'application.position', 'interviewer', 'feedbacks'])),
         ]);
     }
 }

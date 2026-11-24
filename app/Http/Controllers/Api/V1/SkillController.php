@@ -3,40 +3,36 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\SkillIndexRequest;
+use App\Http\Requests\Api\V1\SkillStoreRequest;
+use App\Http\Resources\Api\V1\SkillResource;
 use App\Models\Skill;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class SkillController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(SkillIndexRequest $request): JsonResponse
     {
+        $validated = $request->validated();
         $query = Skill::query();
 
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->query('search') . '%');
+        if (isset($validated['search'])) {
+            $query->where('name', 'like', '%'.$validated['search'].'%');
         }
 
-        if ($request->filled('category')) {
-            $query->where('category', $request->query('category'));
+        if (isset($validated['category'])) {
+            $query->where('category', $validated['category']);
         }
 
-        return response()->json([
-            'data' => $query->orderBy('name')->paginate(30),
-        ]);
+        return $this->paginatedResponse(SkillResource::collection($query->orderBy('name')->paginate(30)));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(SkillStoreRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:100', 'unique:skills,name'],
-            'category' => ['nullable', 'string', 'in:technical,soft_skill,language,tool'],
-        ]);
-
-        $skill = Skill::create($validated);
+        $skill = Skill::create($request->validated());
 
         return response()->json([
-            'data' => $skill,
+            'data' => new SkillResource($skill),
         ], 201);
     }
 }

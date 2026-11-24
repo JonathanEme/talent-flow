@@ -6,13 +6,15 @@ use App\Enums\ApplicationStage;
 use App\Enums\OfferStatus;
 use App\Exceptions\InvalidTransitionException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\OfferIndexRequest;
+use App\Http\Requests\Api\V1\OfferStoreRequest;
+use App\Http\Requests\Api\V1\OfferUpdateStatusRequest;
+use App\Http\Resources\Api\V1\OfferResource;
 use App\Models\Application;
 use App\Models\Offer;
 use App\Services\ApplicationService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 
 class OfferController extends Controller
 {
@@ -20,38 +22,29 @@ class OfferController extends Controller
         protected ApplicationService $applicationService
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(OfferIndexRequest $request): JsonResponse
     {
+        $validated = $request->validated();
         $query = $this->scopeOffers(Offer::query())->with([
             'application.candidate',
             'application.position.company',
             'creator',
         ]);
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->query('status'));
+        if (isset($validated['status'])) {
+            $query->where('status', $validated['status']);
         }
 
-        if ($request->filled('application_id')) {
-            $query->where('application_id', $request->query('application_id'));
+        if (isset($validated['application_id'])) {
+            $query->where('application_id', $validated['application_id']);
         }
 
-        return response()->json([
-            'data' => $query->latest()->paginate(15),
-        ]);
+        return $this->paginatedResponse(OfferResource::collection($query->latest()->paginate(15)));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(OfferStoreRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'application_id' => ['required', 'exists:applications,id'],
-            'salary_offered' => ['required', 'numeric', 'min:1'],
-            'currency' => ['nullable', 'string', 'max:10'],
-            'start_date' => ['required', 'date', 'after_or_equal:today'],
-            'expiration_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-            'benefits_summary' => ['nullable', 'string'],
-            'terms_and_conditions' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
 
         $this->ensureApplication(Application::findOrFail($validated['application_id']));
 
@@ -81,7 +74,7 @@ class OfferController extends Controller
 
         return response()->json([
             'message' => 'Offer created successfully.',
-            'data' => $offer->load(['application.candidate', 'application.position', 'creator']),
+            'data' => new OfferResource($offer->load(['application.candidate', 'application.position', 'creator'])),
         ], 201);
     }
 
@@ -90,16 +83,13 @@ class OfferController extends Controller
         $this->ensureOffer($offer);
 
         return response()->json([
-            'data' => $offer->load(['application.candidate', 'application.position.company', 'creator']),
+            'data' => new OfferResource($offer->load(['application.candidate', 'application.position.company', 'creator'])),
         ]);
     }
 
-    public function updateStatus(Request $request, Offer $offer): JsonResponse
+    public function updateStatus(OfferUpdateStatusRequest $request, Offer $offer): JsonResponse
     {
-        $validated = $request->validate([
-            'status' => ['required', 'string', Rule::in(OfferStatus::transitionalValues())],
-            'decline_reason' => ['nullable', 'required_if:status,declined', 'string'],
-        ]);
+        $validated = $request->validated();
 
         $this->ensureOffer($offer);
 
@@ -147,7 +137,7 @@ class OfferController extends Controller
 
         return response()->json([
             'message' => 'Offer status updated successfully.',
-            'data' => $offer->fresh(['application.candidate', 'application.position']),
+            'data' => new OfferResource($offer->fresh(['application.candidate', 'application.position'])),
         ]);
     }
 

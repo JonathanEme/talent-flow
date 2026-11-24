@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Application;
+use App\Models\Candidate;
 use App\Models\Interview;
 use App\Models\Offer;
 use App\Models\Position;
@@ -43,6 +44,13 @@ trait TenantScope
             : $query->whereHas('position', fn (Builder $positionQuery): mixed => $positionQuery->where('company_id', $this->tenantCompanyId()));
     }
 
+    protected function scopeCandidates(Builder $query): Builder
+    {
+        return $this->isGlobal()
+            ? $query
+            : $query->whereHas('applications.position', fn (Builder $positionQuery): mixed => $positionQuery->where('company_id', $this->tenantCompanyId()));
+    }
+
     protected function scopeInterviews(Builder $query): Builder
     {
         return $this->isGlobal()
@@ -73,6 +81,23 @@ trait TenantScope
     {
         $application->loadMissing('position');
         $this->ensurePosition($application->position);
+    }
+
+    protected function ensureCandidate(Candidate $candidate): void
+    {
+        if ($this->isGlobal()) {
+            return;
+        }
+
+        $candidate->loadMissing('applications.position');
+
+        $allowed = $candidate->applications->contains(
+            fn (Application $application): bool => (int) $application->position?->company_id === $this->tenantCompanyId()
+        );
+
+        if (! $allowed) {
+            abort(403, 'No tienes acceso a este candidato.');
+        }
     }
 
     protected function ensureInterview(Interview $interview): void

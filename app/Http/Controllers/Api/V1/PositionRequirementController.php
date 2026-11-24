@@ -3,26 +3,19 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\SyncPositionRequirementsRequest;
+use App\Http\Resources\Api\V1\PositionResource;
 use App\Models\Position;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class PositionRequirementController extends Controller
 {
-    public function sync(Request $request, Position $position): JsonResponse
+    public function sync(SyncPositionRequirementsRequest $request, Position $position): JsonResponse
     {
         $this->ensurePosition($position);
 
-        $validated = $request->validate([
-            'skills' => ['required', 'array'],
-            'skills.*.skill_id' => ['required', 'exists:skills,id'],
-            'skills.*.is_mandatory' => ['required', 'boolean'],
-            'skills.*.min_years_experience' => ['nullable', 'integer', 'min:0'],
-            'skills.*.expected_level' => ['nullable', 'string', 'in:beginner,intermediate,advanced,expert'],
-        ]);
-
         $syncData = [];
-        foreach ($validated['skills'] as $skill) {
+        foreach ($request->validated('skills') as $skill) {
             $syncData[$skill['skill_id']] = [
                 'is_mandatory' => $skill['is_mandatory'],
                 'min_years_experience' => $skill['min_years_experience'] ?? 1,
@@ -34,7 +27,7 @@ class PositionRequirementController extends Controller
 
         return response()->json([
             'message' => 'Requirements updated successfully.',
-            'data' => $position->load('skills'),
+            'data' => new PositionResource($position->load('skills')),
         ]);
     }
 }

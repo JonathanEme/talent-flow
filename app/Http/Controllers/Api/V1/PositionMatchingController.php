@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\PositionRecommendationsRequest;
+use App\Http\Resources\Api\V1\MatchResource;
 use App\Models\Candidate;
 use App\Models\Position;
 use App\Services\MatchingService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class PositionMatchingController extends Controller
 {
@@ -15,14 +16,11 @@ class PositionMatchingController extends Controller
         protected MatchingService $matchingService
     ) {}
 
-    /**
-     * Ranking de candidatos recomendados para una posición.
-     */
-    public function recommendations(Request $request, Position $position): JsonResponse
+    public function recommendations(PositionRecommendationsRequest $request, Position $position): JsonResponse
     {
         $this->ensurePosition($position);
 
-        $limit = (int) $request->query('limit', 15);
+        $limit = $request->validated('limit') ?? 15;
         $recommendations = $this->matchingService->getRecommendationsForPosition($position, $limit);
 
         return response()->json([
@@ -31,24 +29,20 @@ class PositionMatchingController extends Controller
                 'title' => $position->title,
                 'total_requirements' => $position->skills()->count(),
             ],
-            'data' => $recommendations,
+            'data' => MatchResource::collection($recommendations),
         ]);
     }
 
-    /**
-     * Comparativa detallada 1 a 1 entre un candidato y una vacante.
-     */
     public function compare(Position $position, Candidate $candidate): JsonResponse
     {
         $this->ensurePosition($position);
+        $this->ensureCandidate($candidate);
 
         $position->load('skills');
         $candidate->load('skills');
 
-        $matchResult = $this->matchingService->calculateMatch($candidate, $position);
-
         return response()->json([
-            'data' => $matchResult,
+            'data' => new MatchResource($this->matchingService->calculateMatch($candidate, $position)),
         ]);
     }
 }

@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Api\V1;
 use App\Enums\ApplicationStage;
 use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\ApplicationIndexRequest;
+use App\Http\Requests\Api\V1\ApplicationStoreRequest;
+use App\Http\Requests\Api\V1\UpdateApplicationStageRequest;
+use App\Http\Resources\Api\V1\ApplicationResource;
+use App\Http\Resources\Api\V1\TimelineResource;
 use App\Models\Application;
 use App\Models\Position;
 use App\Services\ApplicationService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class ApplicationController extends Controller
 {
@@ -18,36 +21,29 @@ class ApplicationController extends Controller
         protected ApplicationService $applicationService
     ) {}
 
-    public function index(Request $request): JsonResponse
+    public function index(ApplicationIndexRequest $request): JsonResponse
     {
+        $validated = $request->validated();
         $query = $this->scopeApplications(Application::query())->with(['candidate', 'position.company', 'stageLogs.user']);
 
-        if ($request->filled('position_id')) {
-            $query->where('position_id', $request->query('position_id'));
+        if (isset($validated['position_id'])) {
+            $query->where('position_id', $validated['position_id']);
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->query('status'));
+        if (isset($validated['status'])) {
+            $query->where('status', $validated['status']);
         }
 
-        if ($request->filled('stage')) {
-            $query->where('stage', $request->query('stage'));
+        if (isset($validated['stage'])) {
+            $query->where('stage', $validated['stage']);
         }
 
-        return response()->json([
-            'data' => $query->latest()->paginate(20),
-        ]);
+        return $this->paginatedResponse(ApplicationResource::collection($query->latest()->paginate(20)));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(ApplicationStoreRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'position_id' => ['required', 'exists:positions,id'],
-            'candidate_id' => ['required', 'exists:candidates,id'],
-            'stage' => ['nullable', 'string', Rule::in(ApplicationStage::initialValues())],
-            'notes' => ['nullable', 'string'],
-            'applied_at' => ['nullable', 'date'],
-        ]);
+        $validated = $request->validated();
 
         $this->ensureCompany((int) Position::findOrFail($validated['position_id'])->company_id);
 
@@ -61,12 +57,10 @@ class ApplicationController extends Controller
             ], 422);
         }
 
-        $initialStage = $validated['stage'] ?? 'new';
-
         $application = Application::create([
             'position_id' => $validated['position_id'],
             'candidate_id' => $validated['candidate_id'],
-            'stage' => $initialStage,
+            'stage' => $validated['stage'] ?? ApplicationStage::New->value,
             'status' => ApplicationStatus::Active->value,
             'notes' => $validated['notes'] ?? null,
             'applied_at' => $validated['applied_at'] ?? now()->toDateString(),
@@ -79,7 +73,7 @@ class ApplicationController extends Controller
         );
 
         return response()->json([
-            'data' => $application->load(['candidate', 'position.company']),
+            'data' => new ApplicationResource($application->load(['candidate', 'position.company'])),
         ], 201);
     }
 
@@ -88,16 +82,13 @@ class ApplicationController extends Controller
         $this->ensureApplication($application);
 
         return response()->json([
-            'data' => $application->load(['candidate', 'position.company', 'stageLogs.user', 'interviews.feedbacks']),
+            'data' => new ApplicationResource($application->load(['candidate', 'position.company', 'stageLogs.user', 'interviews.feedbacks'])),
         ]);
     }
 
-    public function updateStage(Request $request, Application $application): JsonResponse
+    public function updateStage(UpdateApplicationStageRequest $request, Application $application): JsonResponse
     {
-        $validated = $request->validate([
-            'stage' => ['required', 'string', Rule::in(ApplicationStage::values())],
-            'comment' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validated();
 
         $this->ensureApplication($application);
 
@@ -110,7 +101,7 @@ class ApplicationController extends Controller
 
         return response()->json([
             'message' => 'Stage updated and logged successfully.',
-            'data' => $updatedApplication,
+            'data' => new ApplicationResource($updatedApplication),
         ]);
     }
 
@@ -118,14 +109,12 @@ class ApplicationController extends Controller
     {
         $this->ensureApplication($application);
 
-        $timeline = $this->applicationService->getUnifiedTimeline($application);
-
-        return response()->json([
+        return (new TimelineResource([
             'application_id' => $application->id,
             'candidate' => "{$application->candidate->first_name} {$application->candidate->last_name}",
             'position' => $application->position->title,
-            'current_stage' => $application->stage,
-            'timeline' => $timeline,
-        ]);
+            'current_stage' => $application->stage->value,
+            'timeline' => $this->applicationService->getUnifiedTimeline($application),
+        ]))->response();
     }
 }

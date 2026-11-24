@@ -3,53 +3,40 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\PositionIndexRequest;
+use App\Http\Requests\Api\V1\PositionStoreRequest;
+use App\Http\Resources\Api\V1\PositionResource;
 use App\Models\Position;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class PositionController extends Controller
 {
-    public function index(Request $request): JsonResponse
+    public function index(PositionIndexRequest $request): JsonResponse
     {
+        $validated = $request->validated();
         $query = $this->scopePositions(Position::query())->with('company');
 
-        if ($request->filled('company_id')) {
-            $query->where('company_id', $request->query('company_id'));
+        if (isset($validated['company_id'])) {
+            $query->where('company_id', $validated['company_id']);
         }
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->query('status'));
+        if (isset($validated['status'])) {
+            $query->where('status', $validated['status']);
         }
 
-        return response()->json([
-            'data' => $query->latest()->paginate(15),
-        ]);
+        return $this->paginatedResponse(PositionResource::collection($query->latest()->paginate(15)));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(PositionStoreRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'company_id' => ['required', 'exists:companies,id'],
-            'title' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string'],
-            'seniority' => ['required', 'string', 'max:50'],
-            'modality' => ['required', 'string', 'max:50'],
-            'location' => ['nullable', 'string', 'max:150'],
-            'employment_type' => ['required', 'string', 'max:50'],
-            'salary_min' => ['nullable', 'numeric', 'min:0'],
-            'salary_max' => ['nullable', 'numeric', 'gte:salary_min'],
-            'vacancies' => ['nullable', 'integer', 'min:1'],
-            'opened_at' => ['required', 'date'],
-            'closes_at' => ['nullable', 'date', 'after_or_equal:opened_at'],
-            'status' => ['nullable', 'string', 'max:50'],
-        ]);
+        $validated = $request->validated();
 
         $this->ensureCompany((int) $validated['company_id']);
 
         $position = Position::create($validated);
 
         return response()->json([
-            'data' => $position->load('company'),
+            'data' => new PositionResource($position->load('company')),
         ], 201);
     }
 
@@ -58,7 +45,7 @@ class PositionController extends Controller
         $this->ensurePosition($position);
 
         return response()->json([
-            'data' => $position->load('company'),
+            'data' => new PositionResource($position->load('company')),
         ]);
     }
 }
