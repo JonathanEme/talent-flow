@@ -23,10 +23,10 @@ return new class extends Migration
             $table->string('currency', 10)->default('USD');
             $table->date('start_date');
             $table->date('expiration_date')->nullable();
-            
+
             $table->text('benefits_summary')->nullable();
             $table->text('terms_and_conditions')->nullable();
-            
+
             $table->string('status')->default('draft'); // draft, sent, accepted, declined
             $table->text('decline_reason')->nullable();
             $table->timestamp('responded_at')->nullable();

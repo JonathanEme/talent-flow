@@ -49,6 +49,14 @@
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
+        "lint": [
+            "vendor/bin/pint --test"
+        ],
+        "quality": [
+            "@lint",
+            "@test",
+            "npm run build"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

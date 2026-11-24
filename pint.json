@@ -1,0 +1,9 @@
+{
+    "preset": "laravel",
+    "exclude": [
+        "database/seeders",
+        "node_modules",
+        "public/build",
+        "vendor"
+    ]
+}

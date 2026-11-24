@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
-            
+
             $table->foreignId('position_id')
                 ->constrained()
                 ->cascadeOnDelete();
@@ -24,7 +24,7 @@ return new class extends Migration
             $table->text('rejection_reason')->nullable();
             $table->text('notes')->nullable();
             $table->date('applied_at');
-            
+
             $table->timestamps();
 
             // Un candidato no puede postularse dos veces a la misma posición
