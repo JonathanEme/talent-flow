@@ -135,6 +135,16 @@ const applyCandidate = async (candidateId: number) => {
               <span v-if="skill.is_mandatory" class="text-[10px] text-amber-400 font-bold">*</span>
             </div>
           </div>
+
+          <div class="mt-3 flex flex-wrap gap-1.5">
+            <span
+              v-for="factor in cand.factors ?? []"
+              :key="factor.key"
+              class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/20"
+            >
+              {{ factor.label }}: {{ factor.score }}%
+            </span>
+          </div>
         </div>
       </div>
     </div>

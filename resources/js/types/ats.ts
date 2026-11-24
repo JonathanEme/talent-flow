@@ -61,6 +61,14 @@ export interface MatchingDetail {
   is_met: boolean;
 }
 
+export interface MatchingFactor {
+  key: string;
+  label: string;
+  score: number;
+  weight: number;
+  points: number;
+}
+
 export interface CandidateRecommendation {
   candidate_id: number;
   candidate_name: string;
@@ -72,6 +80,7 @@ export interface CandidateRecommendation {
   optional_matched: number;
   optional_total: number;
   details: MatchingDetail[];
+  factors?: MatchingFactor[];
 }
 
 export interface TimelineEvent {

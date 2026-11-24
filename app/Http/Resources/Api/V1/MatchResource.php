@@ -20,6 +20,7 @@ class MatchResource extends JsonResource
             'optional_matched' => $this->resource['optional_matched'],
             'optional_total' => $this->resource['optional_total'],
             'details' => $this->resource['details'],
+            'factors' => $this->resource['factors'] ?? [],
         ];
     }
 }
