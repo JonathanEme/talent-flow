@@ -118,6 +118,8 @@ export interface CandidateRecommendation {
   optional_total: number;
   details: MatchingDetail[];
   factors?: MatchingFactor[];
+  already_applied: boolean;
+  application_stage: string | null;
 }
 
 export interface DashboardData {

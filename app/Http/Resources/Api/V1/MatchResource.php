@@ -21,6 +21,8 @@ class MatchResource extends JsonResource
             'optional_total' => $this->resource['optional_total'],
             'details' => $this->resource['details'],
             'factors' => $this->resource['factors'] ?? [],
+            'already_applied' => (bool) ($this->resource['already_applied'] ?? false),
+            'application_stage' => $this->resource['application_stage'] ?? null,
         ];
     }
 }

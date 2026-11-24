@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Candidate;
 use App\Models\Position;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -54,24 +55,45 @@ class MatchingService
             'optional_total' => $optionalTotal,
             'details' => $skillDetails,
             'factors' => $factors,
+            'already_applied' => false,
+            'application_stage' => null,
         ];
     }
 
-    public function getRecommendationsForPosition(Position $position, int $limit = 20): Collection
+    public function getRecommendationsForPosition(Position $position, int $limit = 20, bool $includeUnassigned = true): Collection
     {
         $position->load('skills');
 
         $candidates = Candidate::query()
-            ->where(function (Builder $query) use ($position): void {
-                $query->whereDoesntHave('applications')
-                    ->orWhereHas('applications.position', fn (Builder $query): mixed => $query->where('company_id', $position->company_id));
+            ->where(function (Builder $query) use ($position, $includeUnassigned): void {
+                $companyScope = fn (Builder $query): mixed => $query->where('company_id', $position->company_id);
+
+                if ($includeUnassigned) {
+                    $query->whereDoesntHave('applications')
+                        ->orWhereHas('applications.position', $companyScope);
+
+                    return;
+                }
+
+                $query->whereHas('applications.position', $companyScope);
             })
-            ->whereDoesntHave('applications', fn (Builder $query): mixed => $query->where('position_id', $position->id))
-            ->with('skills')
+            ->with(['skills', 'applications' => fn (HasMany $query): mixed => $query->where('position_id', $position->id)])
             ->get();
 
-        return $candidates->map(fn (Candidate $candidate): array => $this->calculateMatch($candidate, $position))
+        return $candidates->map(function (Candidate $candidate) use ($position): array {
+            $match = $this->calculateMatch($candidate, $position);
+            $application = $candidate->applications->first();
+
+            $match['already_applied'] = $application !== null;
+            $match['application_stage'] = $application?->stage?->value;
+
+            return $match;
+        })
             ->sort(function (array $a, array $b): int {
+                if ($a['already_applied'] !== $b['already_applied']) {
+                    return $a['already_applied'] <=> $b['already_applied'];
+                }
+
                 if ($a['meets_all_mandatory'] === $b['meets_all_mandatory']) {
                     return $b['overall_score'] <=> $a['overall_score'];
                 }

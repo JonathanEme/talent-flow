@@ -103,7 +103,7 @@ class MatchingTest extends TestCase
         $this->assertGreaterThan($misalignedScore, $alignedScore);
     }
 
-    public function test_recommendations_are_scoped_by_company_and_exclude_existing_applications(): void
+    public function test_recommendations_are_scoped_by_company_and_flag_existing_applications(): void
     {
         $company = Company::create(['name' => 'TalentFlow']);
         $otherCompany = Company::create(['name' => 'Otra empresa']);
@@ -122,11 +122,15 @@ class MatchingTest extends TestCase
 
         $recommendations = app(MatchingService::class)->getRecommendationsForPosition($target);
 
-        $this->assertCount(1, $recommendations);
-        $this->assertSame($eligible->id, $recommendations->first()['candidate_id']);
+        $this->assertCount(2, $recommendations);
+        $this->assertContains($eligible->id, $recommendations->pluck('candidate_id')->all());
+        $this->assertContains($alreadyApplied->id, $recommendations->pluck('candidate_id')->all());
+        $this->assertFalse($recommendations->firstWhere('candidate_id', $eligible->id)['already_applied']);
+        $this->assertTrue($recommendations->firstWhere('candidate_id', $alreadyApplied->id)['already_applied']);
+        $this->assertSame('new', $recommendations->firstWhere('candidate_id', $alreadyApplied->id)['application_stage']);
     }
 
-    public function test_recommendations_include_unapplied_candidates_from_the_talent_pool(): void
+    public function test_recommendations_include_unapplied_candidates_and_flag_applied_ones(): void
     {
         $company = Company::create(['name' => 'TalentFlow']);
         $otherCompany = Company::create(['name' => 'Otra empresa']);
@@ -141,8 +145,10 @@ class MatchingTest extends TestCase
 
         $recommendations = app(MatchingService::class)->getRecommendationsForPosition($target);
 
-        $this->assertCount(1, $recommendations);
-        $this->assertSame($unapplied->id, $recommendations->first()['candidate_id']);
+        $this->assertCount(2, $recommendations);
+        $this->assertContains($unapplied->id, $recommendations->pluck('candidate_id')->all());
+        $this->assertFalse($recommendations->firstWhere('candidate_id', $unapplied->id)['already_applied']);
+        $this->assertTrue($recommendations->firstWhere('candidate_id', $alreadyApplied->id)['already_applied']);
     }
 
     public function test_match_endpoints_expose_the_explainable_factor_contract(): void

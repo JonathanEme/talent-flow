@@ -108,6 +108,22 @@ class TenantIsolationTest extends TestCase
             ->assertJsonMissing(['benefits_summary' => 'beneficios-ajenos']);
     }
 
+    public function test_tenant_recommendations_hide_unapplied_candidates(): void
+    {
+        $ownCompany = $this->makeCompany(['name' => 'Propia']);
+
+        Sanctum::actingAs($this->makeUser($ownCompany));
+
+        $position = $this->makePosition($ownCompany);
+        $this->makeCandidate(['email' => 'unapplied@example.test']);
+        $this->makeApplication($this->makePosition($ownCompany), $this->makeCandidate(['email' => 'own@example.test']));
+
+        $this->getJson("/api/v1/positions/{$position->id}/recommendations")
+            ->assertOk()
+            ->assertJsonFragment(['email' => 'own@example.test'])
+            ->assertJsonMissing(['email' => 'unapplied@example.test']);
+    }
+
     public function test_global_user_can_access_every_company(): void
     {
         $ownCompany = $this->makeCompany(['name' => 'Propia']);

@@ -18,6 +18,16 @@ const recommendationsError = ref<string | null>(null);
 const applyingCandidateId = ref<number | null>(null);
 const successMessage = ref<string | null>(null);
 
+const stageLabels: Record<string, string> = {
+  new: 'Nuevo',
+  screening: 'Screening',
+  technical_interview: 'Entrevista técnica',
+  final_interview: 'Entrevista final',
+  offer: 'Oferta',
+  hired: 'Contratado',
+  rejected: 'Descartado',
+};
+
 const loadPosition = async () => {
   try {
     const response = await apiClient.get(`/positions/${route.params.id}`);
@@ -131,6 +141,12 @@ const applyCandidate = async (candidateId: number) => {
                 >
                   {{ cand.meets_all_mandatory ? 'Cumple Obligatorios' : 'Faltan Obligatorios' }}
                 </span>
+                <span
+                  v-if="cand.already_applied"
+                  class="px-2.5 py-0.5 text-xs font-semibold rounded-full border bg-indigo-50 text-indigo-700 border-indigo-200"
+                >
+                  En proceso · {{ cand.application_stage ? (stageLabels[cand.application_stage] ?? cand.application_stage) : 'postulado' }}
+                </span>
               </div>
               <p class="text-sm text-slate-500 mt-0.5">{{ cand.email }}</p>
             </div>
@@ -143,11 +159,12 @@ const applyCandidate = async (candidateId: number) => {
 
               <button
                 @click="applyCandidate(cand.candidate_id)"
-                :disabled="applyingCandidateId === cand.candidate_id"
+                :disabled="cand.already_applied || applyingCandidateId === cand.candidate_id"
                 class="bg-sky-600 hover:bg-sky-500 disabled:bg-slate-300 text-white px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
               >
-                <UserPlus :size="15" />
-                {{ applyingCandidateId === cand.candidate_id ? 'Postulando...' : 'Sumar al Proceso' }}
+                <CheckCircle2 v-if="cand.already_applied" :size="15" />
+                <UserPlus v-else :size="15" />
+                {{ cand.already_applied ? 'Ya en el proceso' : applyingCandidateId === cand.candidate_id ? 'Postulando...' : 'Sumar al Proceso' }}
               </button>
             </div>
           </div>

@@ -21,7 +21,11 @@ class PositionMatchingController extends Controller
         $this->ensurePosition($position);
 
         $limit = $request->validated('limit') ?? 15;
-        $recommendations = $this->matchingService->getRecommendationsForPosition($position, $limit);
+        $recommendations = $this->matchingService->getRecommendationsForPosition(
+            $position,
+            $limit,
+            auth()->user()->isGlobal()
+        );
 
         return response()->json([
             'position' => [
