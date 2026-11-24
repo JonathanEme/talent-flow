@@ -119,6 +119,7 @@ export interface CandidateRecommendation {
   details: MatchingDetail[];
   factors?: MatchingFactor[];
   already_applied: boolean;
+  application_id: number | null;
   application_stage: string | null;
 }
 

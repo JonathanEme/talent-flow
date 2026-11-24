@@ -22,6 +22,7 @@ class MatchResource extends JsonResource
             'details' => $this->resource['details'],
             'factors' => $this->resource['factors'] ?? [],
             'already_applied' => (bool) ($this->resource['already_applied'] ?? false),
+            'application_id' => $this->resource['application_id'] ?? null,
             'application_stage' => $this->resource['application_stage'] ?? null,
         ];
     }

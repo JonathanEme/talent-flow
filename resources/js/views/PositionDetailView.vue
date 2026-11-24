@@ -141,8 +141,16 @@ const applyCandidate = async (candidateId: number) => {
                 >
                   {{ cand.meets_all_mandatory ? 'Cumple Obligatorios' : 'Faltan Obligatorios' }}
                 </span>
+                <router-link
+                  v-if="cand.already_applied && cand.application_id"
+                  :to="{ path: '/pipeline', query: { position: String(position.id), application: String(cand.application_id) } }"
+                  class="px-2.5 py-0.5 text-xs font-semibold rounded-full border bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 transition"
+                  title="Abrir esta candidatura en el pipeline de la vacante"
+                >
+                  En proceso · {{ cand.application_stage ? (stageLabels[cand.application_stage] ?? cand.application_stage) : 'postulado' }} · Ver pipeline
+                </router-link>
                 <span
-                  v-if="cand.already_applied"
+                  v-else-if="cand.already_applied"
                   class="px-2.5 py-0.5 text-xs font-semibold rounded-full border bg-indigo-50 text-indigo-700 border-indigo-200"
                 >
                   En proceso · {{ cand.application_stage ? (stageLabels[cand.application_stage] ?? cand.application_stage) : 'postulado' }}

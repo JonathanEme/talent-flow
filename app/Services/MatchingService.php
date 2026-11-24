@@ -56,6 +56,7 @@ class MatchingService
             'details' => $skillDetails,
             'factors' => $factors,
             'already_applied' => false,
+            'application_id' => null,
             'application_stage' => null,
         ];
     }
@@ -85,6 +86,7 @@ class MatchingService
             $application = $candidate->applications->first();
 
             $match['already_applied'] = $application !== null;
+            $match['application_id'] = $application?->id;
             $match['application_stage'] = $application?->stage?->value;
 
             return $match;

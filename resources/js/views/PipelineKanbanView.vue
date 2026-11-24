@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { apiClient } from '../api/client';
 import { errorMessage, unwrapItem } from '../api/pagination';
 import { usePaginatedList } from '../composables/usePaginatedList';
 import { notifyError, notifySuccess } from '../composables/useNotifications';
 import PaginationControls from '../components/PaginationControls.vue';
 import StatePanel from '../components/StatePanel.vue';
+import InterviewFormModal from '../components/InterviewFormModal.vue';
 import type { Application, Position } from '../types/ats';
 import { Kanban, ArrowRight, History, CalendarPlus, X } from 'lucide-vue-next';
+
+const route = useRoute();
 
 const {
   items: positions,
@@ -46,12 +50,12 @@ type StageKey = Application['stage'];
 
 const allowedTransitions: Record<StageKey, StageKey[]> = {
   new: ['screening', 'rejected'],
-  screening: ['technical_interview', 'rejected'],
-  technical_interview: ['final_interview', 'rejected'],
-  final_interview: ['offer', 'rejected'],
-  offer: ['hired', 'rejected'],
-  hired: [],
-  rejected: [],
+  screening: ['new', 'technical_interview', 'rejected'],
+  technical_interview: ['screening', 'final_interview', 'rejected'],
+  final_interview: ['technical_interview', 'offer', 'rejected'],
+  offer: ['final_interview', 'hired', 'rejected'],
+  hired: ['offer'],
+  rejected: ['new'],
 };
 
 const canDrop = (from: StageKey | null, to: StageKey): boolean =>
@@ -71,15 +75,36 @@ const groupedApplications = computed(() => {
 
 const getApplicationsByStage = (stageKey: StageKey) => groupedApplications.value.get(stageKey) ?? [];
 
+const highlightedAppId = ref<number | null>(null);
+const highlightedApplication = computed(
+  () => applications.value.find((item) => item.id === highlightedAppId.value) ?? null,
+);
+
+const focusHighlightedApplication = async () => {
+  if (highlightedAppId.value === null) return;
+
+  await nextTick();
+  document.getElementById(`application-${highlightedAppId.value}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
+
 onMounted(async () => {
+  const requestedPositionId = Number(route.query.position);
+  const requestedApplicationId = Number(route.query.application);
+
   await loadPositions();
-  if (!selectedPositionId.value && positions.value.length > 0) {
-    selectedPositionId.value = positions.value[0].id;
+  const requestedPosition = positions.value.find((item) => item.id === requestedPositionId);
+  selectedPositionId.value = requestedPosition?.id ?? positions.value[0]?.id ?? null;
+
+  if (Number.isInteger(requestedApplicationId) && requestedApplicationId > 0) {
+    highlightedAppId.value = requestedApplicationId;
   }
+
   await loadApplications();
+  await focusHighlightedApplication();
 });
 
 const filterByPosition = async () => {
+  highlightedAppId.value = null;
   page.value = 1;
   await loadApplications();
 };
@@ -175,55 +200,10 @@ const onDrop = async (event: DragEvent, stageKey: StageKey) => {
 
 const showInterviewModal = ref(false);
 const selectedAppForInterview = ref<Application | null>(null);
-const savingInterview = ref(false);
-const formError = ref<string | null>(null);
-const interviewForm = ref({
-  type: 'technical',
-  scheduled_at: '',
-  duration_minutes: 45,
-  location_or_link: '',
-  notes: '',
-});
 
 const openInterviewModal = (app: Application) => {
   selectedAppForInterview.value = app;
-  formError.value = null;
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(10, 0, 0, 0);
-  interviewForm.value.scheduled_at = tomorrow.toISOString().slice(0, 16);
   showInterviewModal.value = true;
-};
-
-const scheduleInterview = async () => {
-  if (!selectedAppForInterview.value) return;
-
-  if (!interviewForm.value.location_or_link.trim()) {
-    formError.value = 'Indica el enlace o ubicación de la entrevista.';
-    notifyError(formError.value);
-    return;
-  }
-
-  savingInterview.value = true;
-  formError.value = null;
-
-  try {
-    await apiClient.post('/interviews', {
-      application_id: selectedAppForInterview.value.id,
-      type: interviewForm.value.type,
-      scheduled_at: interviewForm.value.scheduled_at,
-      duration_minutes: interviewForm.value.duration_minutes,
-      location_or_link: interviewForm.value.location_or_link,
-      notes: interviewForm.value.notes,
-    });
-    showInterviewModal.value = false;
-    notifySuccess('Entrevista agendada con éxito.');
-  } catch (caught) {
-    formError.value = errorMessage(caught, 'Error al agendar la entrevista.');
-    notifyError(formError.value);
-  } finally {
-    savingInterview.value = false;
-  }
 };
 </script>
 
@@ -236,7 +216,7 @@ const scheduleInterview = async () => {
           <Kanban class="text-indigo-600" :size="24" /> Pipeline de Selección
         </h1>
         <p class="text-slate-500 text-sm">Gestiona etapas, entrevistas y trazabilidad en tiempo real.</p>
-        <p class="text-slate-400 text-xs mt-1">Arrastra una tarjeta a otra columna para cambiar de etapa (solo transiciones válidas).</p>
+        <p class="text-slate-400 text-xs mt-1">Arrastra una tarjeta hacia adelante o hacia atrás entre etapas permitidas.</p>
       </div>
 
       <div class="flex items-center gap-3">
@@ -252,6 +232,24 @@ const scheduleInterview = async () => {
           </option>
         </select>
       </div>
+    </div>
+
+    <div
+      v-if="highlightedApplication"
+      class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800"
+    >
+      <span>
+        Candidato seleccionado desde el ranking:
+        <strong>{{ highlightedApplication.candidate?.first_name }} {{ highlightedApplication.candidate?.last_name }}</strong>.
+        Arrástralo a la etapa deseada.
+      </span>
+      <button
+        type="button"
+        @click="highlightedAppId = null"
+        class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900"
+      >
+        <X :size="14" /> Quitar selección
+      </button>
     </div>
 
     <StatePanel
@@ -294,9 +292,13 @@ const scheduleInterview = async () => {
           <div
             v-for="app in getApplicationsByStage(stg.key)"
             :key="app.id"
+            :id="`application-${app.id}`"
             :draggable="pendingAppId === null"
             class="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition flex flex-col justify-between gap-3 cursor-grab active:cursor-grabbing select-none"
-            :class="draggedAppId === app.id ? 'opacity-50 ring-2 ring-indigo-400' : ''"
+            :class="[
+              draggedAppId === app.id ? 'opacity-50 ring-2 ring-indigo-400' : '',
+              highlightedAppId === app.id ? 'ring-2 ring-amber-400 border-amber-300' : '',
+            ]"
             @dragstart="onDragStart($event, app)"
             @dragend="resetDrag"
           >
@@ -369,55 +371,11 @@ const scheduleInterview = async () => {
       <PaginationControls :meta="meta" :links="links" @change="goToPage" />
     </template>
 
-    <!-- Modal Entrevista -->
-    <div v-if="showInterviewModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="interview-modal-title">
-        <div class="flex justify-between items-center mb-4">
-          <h3 id="interview-modal-title" class="text-base font-bold text-slate-900">Agendar Entrevista</h3>
-          <button type="button" aria-label="Cerrar" @click="showInterviewModal = false" class="text-slate-400 hover:text-slate-600">
-            <X :size="18" />
-          </button>
-        </div>
-
-        <p class="text-xs text-slate-500 mb-4">
-          Candidato: <span class="text-slate-800 font-bold">{{ selectedAppForInterview?.candidate?.first_name }} {{ selectedAppForInterview?.candidate?.last_name }}</span>
-        </p>
-
-        <form @submit.prevent="scheduleInterview" class="space-y-4 text-xs">
-          <div>
-            <label class="block text-slate-700 font-semibold mb-1">Tipo de Entrevista</label>
-            <select v-model="interviewForm.type" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500">
-              <option value="screening">Screening RRHH</option>
-              <option value="technical">Entrevista Técnica</option>
-              <option value="final">Entrevista Final / Cliente</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-slate-700 font-semibold mb-1">Fecha y Hora</label>
-            <input type="datetime-local" v-model="interviewForm.scheduled_at" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500" />
-          </div>
-
-          <div>
-            <label class="block text-slate-700 font-semibold mb-1">Duración (minutos)</label>
-            <input type="number" v-model="interviewForm.duration_minutes" min="15" max="180" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500" />
-          </div>
-
-          <div>
-            <label class="block text-slate-700 font-semibold mb-1">Link de Reunión</label>
-            <input type="url" v-model="interviewForm.location_or_link" required placeholder="https://meet.google.com/..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500" />
-          </div>
-
-          <p v-if="formError" class="rounded-lg bg-rose-50 p-2.5 text-xs text-rose-700" role="alert">{{ formError }}</p>
-
-          <div class="flex justify-end gap-2 pt-2">
-            <button type="button" @click="showInterviewModal = false" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">Cancelar</button>
-            <button type="submit" :disabled="savingInterview" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-sm">
-              {{ savingInterview ? 'Guardando...' : 'Confirmar Entrevista' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <InterviewFormModal
+      :open="showInterviewModal"
+      :application-id="selectedAppForInterview?.id ?? null"
+      @close="showInterviewModal = false"
+      @created="notifySuccess('Entrevista agendada con éxito.')"
+    />
   </div>
 </template>

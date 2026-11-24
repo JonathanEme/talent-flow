@@ -38,11 +38,12 @@ enum ApplicationStage: string
     {
         return match ($this) {
             self::New => [self::Screening, self::Rejected],
-            self::Screening => [self::TechnicalInterview, self::Rejected],
-            self::TechnicalInterview => [self::FinalInterview, self::Rejected],
-            self::FinalInterview => [self::Offer, self::Rejected],
-            self::Offer => [self::Hired, self::Rejected],
-            self::Hired, self::Rejected => [],
+            self::Screening => [self::New, self::TechnicalInterview, self::Rejected],
+            self::TechnicalInterview => [self::Screening, self::FinalInterview, self::Rejected],
+            self::FinalInterview => [self::TechnicalInterview, self::Offer, self::Rejected],
+            self::Offer => [self::FinalInterview, self::Hired, self::Rejected],
+            self::Hired => [self::Offer],
+            self::Rejected => [self::New],
         };
     }
 

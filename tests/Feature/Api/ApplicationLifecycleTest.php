@@ -69,6 +69,24 @@ class ApplicationLifecycleTest extends TestCase
             ->assertJsonPath('data.status', 'hired');
     }
 
+    public function test_backward_stage_transition_is_allowed_and_logged(): void
+    {
+        $application = $this->makeApplication('screening');
+
+        $this->patchJson("/api/v1/applications/{$application->id}/stage", [
+            'stage' => 'new',
+            'comment' => 'Regreso a revisión inicial',
+        ])->assertOk()
+            ->assertJsonPath('data.stage', 'new')
+            ->assertJsonPath('data.status', 'active');
+
+        $this->assertDatabaseHas('application_stage_logs', [
+            'application_id' => $application->id,
+            'from_stage' => 'screening',
+            'to_stage' => 'new',
+        ]);
+    }
+
     public function test_offer_acceptance_logs_event_and_hires_application(): void
     {
         $application = $this->makeApplication('offer');
