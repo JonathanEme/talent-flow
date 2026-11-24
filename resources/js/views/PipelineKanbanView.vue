@@ -75,7 +75,6 @@ const moveStage = async (app: Application, nextStage: string) => {
   try {
     await apiClient.patch(`/applications/${app.id}/stage`, {
       stage: nextStage,
-      user_id: 1,
       comment: `Movido a ${nextStage} desde tablero Kanban.`,
     });
     app.stage = nextStage as any;
@@ -99,7 +98,6 @@ const scheduleInterview = async () => {
   try {
     await apiClient.post('/interviews', {
       application_id: selectedAppForInterview.value.id,
-      interviewer_id: 2,
       type: interviewForm.value.type,
       scheduled_at: interviewForm.value.scheduled_at,
       duration_minutes: interviewForm.value.duration_minutes,

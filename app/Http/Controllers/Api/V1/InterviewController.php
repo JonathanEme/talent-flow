@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\Application;
 use App\Models\Interview;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,7 +12,7 @@ class InterviewController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Interview::query()->with([
+        $query = $this->scopeInterviews(Interview::query())->with([
             'application.candidate',
             'application.position',
             'interviewer',
@@ -39,7 +40,7 @@ class InterviewController extends Controller
     {
         $validated = $request->validate([
             'application_id' => ['required', 'exists:applications,id'],
-            'interviewer_id' => ['required', 'exists:users,id'],
+            'interviewer_id' => ['nullable', 'exists:users,id'],
             'type' => ['required', 'in:screening,hr,technical,client,final'],
             'scheduled_at' => ['required', 'date', 'after:now'],
             'duration_minutes' => ['nullable', 'integer', 'min:15', 'max:240'],
@@ -47,7 +48,11 @@ class InterviewController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
-        $interview = Interview::create($validated);
+        $this->ensureApplication(Application::findOrFail($validated['application_id']));
+
+        $interview = Interview::create(array_merge($validated, [
+            'interviewer_id' => $validated['interviewer_id'] ?? auth()->id(),
+        ]));
 
         return response()->json([
             'data' => $interview->load(['application.candidate', 'application.position', 'interviewer']),
@@ -56,6 +61,8 @@ class InterviewController extends Controller
 
     public function show(Interview $interview): JsonResponse
     {
+        $this->ensureInterview($interview);
+
         return response()->json([
             'data' => $interview->load(['application.candidate', 'application.position', 'interviewer', 'feedback.evaluator']),
         ]);
@@ -63,6 +70,8 @@ class InterviewController extends Controller
 
     public function update(Request $request, Interview $interview): JsonResponse
     {
+        $this->ensureInterview($interview);
+
         $validated = $request->validate([
             'scheduled_at' => ['nullable', 'date'],
             'duration_minutes' => ['nullable', 'integer', 'min:15', 'max:240'],

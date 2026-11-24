@@ -42,7 +42,6 @@ const applyCandidate = async (candidateId: number) => {
       candidate_id: candidateId,
       stage: 'new',
       notes: 'Postulado automáticamente desde el motor de matching.',
-      user_id: 1,
     });
     
     successMessage.value = '¡Candidato postulado exitosamente al proceso!';

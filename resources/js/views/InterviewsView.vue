@@ -49,7 +49,6 @@ const submitFeedback = async () => {
   savingFeedback.value = true;
   try {
     await apiClient.post(`/interviews/${selectedInterview.value.id}/feedback`, {
-      user_id: 1,
       score: feedbackForm.value.score,
       strengths: feedbackForm.value.strengths,
       weaknesses: feedbackForm.value.weaknesses,

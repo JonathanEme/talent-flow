@@ -11,7 +11,7 @@ class PositionController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Position::query()->with('company');
+        $query = $this->scopePositions(Position::query())->with('company');
 
         if ($request->filled('company_id')) {
             $query->where('company_id', $request->query('company_id'));
@@ -44,6 +44,8 @@ class PositionController extends Controller
             'status' => ['nullable', 'string', 'max:50'],
         ]);
 
+        $this->ensureCompany((int) $validated['company_id']);
+
         $position = Position::create($validated);
 
         return response()->json([
@@ -53,6 +55,8 @@ class PositionController extends Controller
 
     public function show(Position $position): JsonResponse
     {
+        $this->ensurePosition($position);
+
         return response()->json([
             'data' => $position->load('company'),
         ]);

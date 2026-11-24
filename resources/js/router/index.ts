@@ -10,8 +10,11 @@ import CandidateDetailView from '../views/CandidateDetailView.vue';
 import CompaniesView from '../views/CompaniesView.vue';
 import InterviewsView from '../views/InterviewsView.vue';
 import OffersView from '../views/OffersView.vue';
+import LoginView from '../views/LoginView.vue';
+import { getToken } from '../api/token';
 
 const routes = [
+  { path: '/login', name: 'login', component: LoginView },
   { path: '/', name: 'dashboard', component: DashboardView },
   { path: '/positions', name: 'positions', component: PositionsView },
   { path: '/positions/create', name: 'position-create', component: PositionCreateView },
@@ -28,4 +31,11 @@ const routes = [
 export const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach((to) => {
+  if (to.path !== '/login' && !getToken()) {
+    return { name: 'login' };
+  }
+  return true;
 });

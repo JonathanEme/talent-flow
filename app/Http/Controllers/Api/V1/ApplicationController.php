@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Application;
+use App\Models\Position;
 use App\Services\ApplicationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class ApplicationController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Application::query()->with(['candidate', 'position.company', 'stageLogs.user']);
+        $query = $this->scopeApplications(Application::query())->with(['candidate', 'position.company', 'stageLogs.user']);
 
         if ($request->filled('position_id')) {
             $query->where('position_id', $request->query('position_id'));
@@ -43,8 +44,9 @@ class ApplicationController extends Controller
             'stage' => ['nullable', 'string', 'in:new,screening,technical_interview,final_interview,offer'],
             'notes' => ['nullable', 'string'],
             'applied_at' => ['nullable', 'date'],
-            'user_id' => ['nullable', 'exists:users,id'],
         ]);
+
+        $this->ensureCompany((int) Position::findOrFail($validated['position_id'])->company_id);
 
         $exists = Application::where('position_id', $validated['position_id'])
             ->where('candidate_id', $validated['candidate_id'])
@@ -71,7 +73,7 @@ class ApplicationController extends Controller
         $this->applicationService->transitionStage(
             $application,
             $initialStage,
-            $validated['user_id'] ?? null,
+            auth()->id(),
             'Postulación inicial registrada.'
         );
 
@@ -82,6 +84,8 @@ class ApplicationController extends Controller
 
     public function show(Application $application): JsonResponse
     {
+        $this->ensureApplication($application);
+
         return response()->json([
             'data' => $application->load(['candidate', 'position.company', 'stageLogs.user', 'interviews.feedback']),
         ]);
@@ -91,14 +95,15 @@ class ApplicationController extends Controller
     {
         $validated = $request->validate([
             'stage' => ['required', 'string', 'in:new,screening,technical_interview,final_interview,offer,rejected,hired'],
-            'user_id' => ['nullable', 'exists:users,id'],
             'comment' => ['nullable', 'string'],
         ]);
+
+        $this->ensureApplication($application);
 
         $updatedApplication = $this->applicationService->transitionStage(
             $application,
             $validated['stage'],
-            $validated['user_id'] ?? null,
+            auth()->id(),
             $validated['comment'] ?? null
         );
 
@@ -110,6 +115,8 @@ class ApplicationController extends Controller
 
     public function timeline(Application $application): JsonResponse
     {
+        $this->ensureApplication($application);
+
         $timeline = $this->applicationService->getUnifiedTimeline($application);
 
         return response()->json([

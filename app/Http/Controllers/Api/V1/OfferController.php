@@ -18,7 +18,7 @@ class OfferController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = Offer::query()->with([
+        $query = $this->scopeOffers(Offer::query())->with([
             'application.candidate',
             'application.position.company',
             'creator',
@@ -41,7 +41,6 @@ class OfferController extends Controller
     {
         $validated = $request->validate([
             'application_id' => ['required', 'exists:applications,id'],
-            'created_by' => ['required', 'exists:users,id'],
             'salary_offered' => ['required', 'numeric', 'min:1'],
             'currency' => ['nullable', 'string', 'max:10'],
             'start_date' => ['required', 'date', 'after_or_equal:today'],
@@ -50,8 +49,11 @@ class OfferController extends Controller
             'terms_and_conditions' => ['nullable', 'string'],
         ]);
 
+        $this->ensureApplication(Application::findOrFail($validated['application_id']));
+
         $offer = DB::transaction(function () use ($validated) {
             $offer = Offer::create(array_merge($validated, [
+                'created_by' => auth()->id(),
                 'status' => 'draft',
                 'currency' => $validated['currency'] ?? 'USD',
             ]));
@@ -62,7 +64,7 @@ class OfferController extends Controller
                 $this->applicationService->transitionStage(
                     $application,
                     'offer',
-                    $validated['created_by'],
+                    auth()->id(),
                     'Generada oferta formal por ' . ($validated['currency'] ?? 'USD') . ' ' . number_format($validated['salary_offered'], 2)
                 );
             }
@@ -78,6 +80,8 @@ class OfferController extends Controller
 
     public function show(Offer $offer): JsonResponse
     {
+        $this->ensureOffer($offer);
+
         return response()->json([
             'data' => $offer->load(['application.candidate', 'application.position.company', 'creator']),
         ]);
@@ -88,8 +92,9 @@ class OfferController extends Controller
         $validated = $request->validate([
             'status' => ['required', 'in:sent,accepted,declined'],
             'decline_reason' => ['nullable', 'required_if:status,declined', 'string'],
-            'user_id' => ['nullable', 'exists:users,id'],
         ]);
+
+        $this->ensureOffer($offer);
 
         DB::transaction(function () use ($offer, $validated) {
             $offer->update([
@@ -105,7 +110,7 @@ class OfferController extends Controller
                 $this->applicationService->transitionStage(
                     $application,
                     'offer',
-                    $validated['user_id'] ?? null,
+                    auth()->id(),
                     '¡Oferta aceptada por el candidato! Contratación confirmada.'
                 );
             } elseif ($validated['status'] === 'declined') {
@@ -116,14 +121,14 @@ class OfferController extends Controller
                 $this->applicationService->transitionStage(
                     $application,
                     'offer',
-                    $validated['user_id'] ?? null,
+                    auth()->id(),
                     'Oferta declinada por el candidato. Motivo: ' . ($validated['decline_reason'] ?? 'No especificado')
                 );
             } elseif ($validated['status'] === 'sent') {
                 $this->applicationService->transitionStage(
                     $application,
                     'offer',
-                    $validated['user_id'] ?? null,
+                    auth()->id(),
                     'Oferta formal enviada al candidato.'
                 );
             }

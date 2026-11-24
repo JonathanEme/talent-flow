@@ -1,14 +1,33 @@
 <script setup lang="ts">
-import { 
-  LayoutDashboard, Briefcase, Kanban, Users, 
-  Building2, Calendar, DollarSign 
+import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import {
+  LayoutDashboard, Briefcase, Kanban, Users,
+  Building2, Calendar, DollarSign, LogOut, UserRound
 } from 'lucide-vue-next';
+import { fetchMe, logout, type AuthUser } from './api/auth';
+
+const route = useRoute();
+const router = useRouter();
+const user = ref<AuthUser | null>(null);
+
+onMounted(async () => {
+  if (route.path !== '/login') {
+    user.value = await fetchMe();
+  }
+});
+
+const signOut = async () => {
+  await logout();
+  user.value = null;
+  await router.push('/login');
+};
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col bg-slate-50 text-slate-800">
     <!-- Header Navbar -->
-    <header class="border-b border-slate-200 bg-white/90 backdrop-blur sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between shadow-xs">
+    <header v-if="route.path !== '/login'" class="border-b border-slate-200 bg-white/90 backdrop-blur sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between shadow-xs">
       <div class="flex items-center gap-3">
         <div class="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-md shadow-indigo-600/20">
           TF
@@ -70,6 +89,21 @@ import {
           <DollarSign :size="15" /> Ofertas
         </router-link>
       </nav>
+
+      <div v-if="user" class="flex items-center gap-3 border-l border-slate-200 pl-4">
+        <div class="flex items-center gap-2 text-sm text-slate-600">
+          <UserRound :size="16" />
+          <span>{{ user.name }}</span>
+        </div>
+        <button
+          type="button"
+          class="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+          title="Cerrar sesión"
+          @click="signOut"
+        >
+          <LogOut :size="16" />
+        </button>
+      </div>
     </header>
 
     <!-- Main Container -->

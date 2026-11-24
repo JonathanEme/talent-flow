@@ -11,7 +11,7 @@ class CandidateController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = Candidate::query();
+        $query = $this->scopeCandidates(Candidate::query());
 
         if ($request->filled('search')) {
             $search = $request->query('search');

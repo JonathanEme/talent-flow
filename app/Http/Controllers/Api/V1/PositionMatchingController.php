@@ -20,6 +20,8 @@ class PositionMatchingController extends Controller
      */
     public function recommendations(Request $request, Position $position): JsonResponse
     {
+        $this->ensurePosition($position);
+
         $limit = (int) $request->query('limit', 15);
         $recommendations = $this->matchingService->getRecommendationsForPosition($position, $limit);
 
@@ -38,6 +40,8 @@ class PositionMatchingController extends Controller
      */
     public function compare(Position $position, Candidate $candidate): JsonResponse
     {
+        $this->ensurePosition($position);
+
         $position->load('skills');
         $candidate->load('skills');
 

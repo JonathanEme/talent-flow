@@ -12,12 +12,16 @@ class CompanyController extends Controller
     public function index(): JsonResponse
     {
         return response()->json([
-            'data' => Company::query()->paginate(15),
+            'data' => $this->scopeCompanies(Company::query())->paginate(15),
         ]);
     }
 
     public function store(Request $request): JsonResponse
     {
+        if (! $this->isGlobal()) {
+            abort(403, 'Solo un administrador global puede crear empresas.');
+        }
+
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'tax_id' => ['nullable', 'string', 'max:50'],
@@ -36,6 +40,8 @@ class CompanyController extends Controller
 
     public function show(Company $company): JsonResponse
     {
+        $this->ensureCompany((int) $company->id);
+
         return response()->json([
             'data' => $company->load('positions'),
         ]);

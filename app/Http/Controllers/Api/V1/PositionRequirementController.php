@@ -11,6 +11,8 @@ class PositionRequirementController extends Controller
 {
     public function sync(Request $request, Position $position): JsonResponse
     {
+        $this->ensurePosition($position);
+
         $validated = $request->validate([
             'skills' => ['required', 'array'],
             'skills.*.skill_id' => ['required', 'exists:skills,id'],

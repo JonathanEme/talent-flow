@@ -12,8 +12,9 @@ class InterviewFeedbackController extends Controller
 {
     public function store(Request $request, Interview $interview): JsonResponse
     {
+        $this->ensureInterview($interview);
+
         $validated = $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
             'score' => ['required', 'integer', 'min:1', 'max:10'],
             'strengths' => ['nullable', 'string'],
             'weaknesses' => ['nullable', 'string'],
@@ -24,7 +25,7 @@ class InterviewFeedbackController extends Controller
         $feedback = InterviewFeedback::updateOrCreate(
             [
                 'interview_id' => $interview->id,
-                'user_id' => $validated['user_id'],
+                'user_id' => auth()->id(),
             ],
             $validated
         );

@@ -55,7 +55,6 @@ const createOffer = async () => {
   try {
     await apiClient.post('/offers', {
       application_id: form.value.application_id,
-      created_by: 1,
       salary_offered: parseFloat(form.value.salary_offered),
       currency: form.value.currency,
       start_date: form.value.start_date,
@@ -86,7 +85,6 @@ const updateStatus = async (offerId: number, status: string, reason: string | nu
     await apiClient.patch(`/offers/${offerId}/status`, {
       status,
       decline_reason: reason,
-      user_id: 1,
     });
     showDeclineModal.value = false;
     declineReason.value = '';

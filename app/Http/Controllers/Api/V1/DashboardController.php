@@ -14,16 +14,17 @@ class DashboardController extends Controller
 {
     public function stats(): JsonResponse
     {
-        $openPositions = Position::where('status', 'open')->count();
-        $totalCandidates = Candidate::count();
-        $activeApplications = Application::where('status', 'active')->count();
-        
-        $upcomingInterviews = Interview::where('status', 'scheduled')
+        $openPositions = $this->scopePositions(Position::query())->where('status', 'open')->count();
+        $totalCandidates = $this->scopeCandidates(Candidate::query())->count();
+        $activeApplications = $this->scopeApplications(Application::query())->where('status', 'active')->count();
+
+        $upcomingInterviews = $this->scopeInterviews(Interview::query())
+            ->where('status', 'scheduled')
             ->where('scheduled_at', '>=', now())
             ->count();
 
         // Conteo por etapa
-        $stageDistribution = Application::select('stage', DB::raw('count(*) as total'))
+        $stageDistribution = $this->scopeApplications(Application::query())->select('stage', DB::raw('count(*) as total'))
             ->groupBy('stage')
             ->pluck('total', 'stage')
             ->toArray();
@@ -39,7 +40,7 @@ class DashboardController extends Controller
         ];
 
         // Próximas entrevistas
-        $nextInterviews = Interview::with(['application.candidate', 'application.position'])
+        $nextInterviews = $this->scopeInterviews(Interview::query())->with(['application.candidate', 'application.position'])
             ->where('status', 'scheduled')
             ->where('scheduled_at', '>=', now())
             ->orderBy('scheduled_at', 'asc')
@@ -47,7 +48,7 @@ class DashboardController extends Controller
             ->get();
 
         // Vacantes con candidatos asociados
-        $recentPositions = Position::with('company')
+        $recentPositions = $this->scopePositions(Position::query())->with('company')
             ->withCount('applications')
             ->latest()
             ->take(5)
