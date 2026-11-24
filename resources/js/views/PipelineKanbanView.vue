@@ -40,7 +40,22 @@ const stages = [
   { key: 'offer', label: 'Oferta', color: 'border-emerald-200 bg-emerald-50/50', badge: 'bg-emerald-100 text-emerald-700' },
   { key: 'hired', label: 'Contratados', color: 'border-emerald-300 bg-emerald-50', badge: 'bg-emerald-200 text-emerald-800' },
   { key: 'rejected', label: 'Descartados', color: 'border-rose-200 bg-rose-50/50', badge: 'bg-rose-100 text-rose-700' },
-];
+] as const;
+
+type StageKey = Application['stage'];
+
+const allowedTransitions: Record<StageKey, StageKey[]> = {
+  new: ['screening', 'rejected'],
+  screening: ['technical_interview', 'rejected'],
+  technical_interview: ['final_interview', 'rejected'],
+  final_interview: ['offer', 'rejected'],
+  offer: ['hired', 'rejected'],
+  hired: [],
+  rejected: [],
+};
+
+const canDrop = (from: StageKey | null, to: StageKey): boolean =>
+  from !== null && from !== to && allowedTransitions[from].includes(to);
 
 const groupedApplications = computed(() => {
   const grouped = new Map<string, Application[]>(stages.map((stage) => [stage.key, []]));
@@ -54,7 +69,7 @@ const groupedApplications = computed(() => {
   return grouped;
 });
 
-const getApplicationsByStage = (stageKey: string) => groupedApplications.value.get(stageKey) ?? [];
+const getApplicationsByStage = (stageKey: StageKey) => groupedApplications.value.get(stageKey) ?? [];
 
 onMounted(async () => {
   await loadPositions();
@@ -76,7 +91,7 @@ const reloadAll = async () => {
 
 const pendingAppId = ref<number | null>(null);
 
-const moveStage = async (app: Application, nextStage: string) => {
+const moveStage = async (app: Application, nextStage: StageKey) => {
   if (pendingAppId.value !== null) return;
   pendingAppId.value = app.id;
 
@@ -87,11 +102,74 @@ const moveStage = async (app: Application, nextStage: string) => {
     });
     const updated = unwrapItem<Application>(response as { data: { data: Application } });
     app.stage = updated.stage;
+    app.status = updated.status;
     notifySuccess(`Candidato movido a ${nextStage}.`);
   } catch (caught) {
     notifyError(errorMessage(caught, 'No se pudo mover la candidatura.'));
   } finally {
     pendingAppId.value = null;
+  }
+};
+
+const draggedAppId = ref<number | null>(null);
+const draggingStage = ref<StageKey | null>(null);
+const dropTargetStage = ref<StageKey | null>(null);
+
+const resetDrag = () => {
+  draggedAppId.value = null;
+  draggingStage.value = null;
+  dropTargetStage.value = null;
+};
+
+const onDragStart = (event: DragEvent, app: Application) => {
+  if (pendingAppId.value !== null) {
+    event.preventDefault();
+    return;
+  }
+
+  draggedAppId.value = app.id;
+  draggingStage.value = app.stage;
+
+  if (event.dataTransfer) {
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', String(app.id));
+  }
+};
+
+const onDragOver = (event: DragEvent, stageKey: StageKey) => {
+  if (!canDrop(draggingStage.value, stageKey)) return;
+
+  event.preventDefault();
+  dropTargetStage.value = stageKey;
+
+  if (event.dataTransfer) {
+    event.dataTransfer.dropEffect = 'move';
+  }
+};
+
+const onDragLeave = (stageKey: StageKey) => {
+  if (dropTargetStage.value === stageKey) {
+    dropTargetStage.value = null;
+  }
+};
+
+const onDrop = async (event: DragEvent, stageKey: StageKey) => {
+  const fromStage = draggingStage.value;
+
+  if (!canDrop(fromStage, stageKey)) {
+    resetDrag();
+    return;
+  }
+
+  event.preventDefault();
+
+  const appId = Number(event.dataTransfer?.getData('text/plain') ?? draggedAppId.value);
+  const app = applications.value.find((item) => item.id === appId);
+
+  resetDrag();
+
+  if (app) {
+    await moveStage(app, stageKey);
   }
 };
 
@@ -158,6 +236,7 @@ const scheduleInterview = async () => {
           <Kanban class="text-indigo-600" :size="24" /> Pipeline de Selección
         </h1>
         <p class="text-slate-500 text-sm">Gestiona etapas, entrevistas y trazabilidad en tiempo real.</p>
+        <p class="text-slate-400 text-xs mt-1">Arrastra una tarjeta a otra columna para cambiar de etapa (solo transiciones válidas).</p>
       </div>
 
       <div class="flex items-center gap-3">
@@ -187,11 +266,21 @@ const scheduleInterview = async () => {
 
     <template v-else>
       <div class="grid grid-cols-1 md:grid-cols-7 gap-4 overflow-x-auto pb-4">
-      <div 
-        v-for="stg in stages" 
-        :key="stg.key" 
-        class="border rounded-2xl p-3.5 flex flex-col min-h-[540px] shadow-sm"
-        :class="stg.color"
+      <div
+        v-for="stg in stages"
+        :key="stg.key"
+        class="border rounded-2xl p-3.5 flex flex-col min-h-[540px] shadow-sm transition"
+        :class="[
+          stg.color,
+          canDrop(draggingStage, stg.key)
+            ? dropTargetStage === stg.key
+              ? 'ring-2 ring-indigo-500 bg-indigo-100/80'
+              : 'ring-2 ring-dashed ring-indigo-300'
+            : '',
+        ]"
+        @dragover="onDragOver($event, stg.key)"
+        @dragleave="onDragLeave(stg.key)"
+        @drop="onDrop($event, stg.key)"
       >
         <div class="flex justify-between items-center mb-3">
           <h2 class="font-bold text-xs text-slate-700 uppercase tracking-wide">{{ stg.label }}</h2>
@@ -202,10 +291,14 @@ const scheduleInterview = async () => {
 
         <!-- Cards -->
         <div class="space-y-3 flex-1">
-          <div 
-            v-for="app in getApplicationsByStage(stg.key)" 
+          <div
+            v-for="app in getApplicationsByStage(stg.key)"
             :key="app.id"
-            class="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition flex flex-col justify-between gap-3"
+            :draggable="pendingAppId === null"
+            class="bg-white border border-slate-200/80 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition flex flex-col justify-between gap-3 cursor-grab active:cursor-grabbing select-none"
+            :class="draggedAppId === app.id ? 'opacity-50 ring-2 ring-indigo-400' : ''"
+            @dragstart="onDragStart($event, app)"
+            @dragend="resetDrag"
           >
             <div>
               <div class="flex justify-between items-start">

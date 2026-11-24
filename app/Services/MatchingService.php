@@ -62,7 +62,10 @@ class MatchingService
         $position->load('skills');
 
         $candidates = Candidate::query()
-            ->whereHas('applications.position', fn (Builder $query): mixed => $query->where('company_id', $position->company_id))
+            ->where(function (Builder $query) use ($position): void {
+                $query->whereDoesntHave('applications')
+                    ->orWhereHas('applications.position', fn (Builder $query): mixed => $query->where('company_id', $position->company_id));
+            })
             ->whereDoesntHave('applications', fn (Builder $query): mixed => $query->where('position_id', $position->id))
             ->with('skills')
             ->get();

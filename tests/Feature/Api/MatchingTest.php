@@ -126,6 +126,25 @@ class MatchingTest extends TestCase
         $this->assertSame($eligible->id, $recommendations->first()['candidate_id']);
     }
 
+    public function test_recommendations_include_unapplied_candidates_from_the_talent_pool(): void
+    {
+        $company = Company::create(['name' => 'TalentFlow']);
+        $otherCompany = Company::create(['name' => 'Otra empresa']);
+
+        $target = $this->makePosition($company);
+        $unapplied = $this->makeCandidate($company);
+        $engagedElsewhere = $this->makeCandidate($otherCompany);
+        $alreadyApplied = $this->makeCandidate($company);
+
+        $this->makeApplicationRecord($this->makePosition($otherCompany), $engagedElsewhere);
+        $this->makeApplicationRecord($target, $alreadyApplied);
+
+        $recommendations = app(MatchingService::class)->getRecommendationsForPosition($target);
+
+        $this->assertCount(1, $recommendations);
+        $this->assertSame($unapplied->id, $recommendations->first()['candidate_id']);
+    }
+
     public function test_match_endpoints_expose_the_explainable_factor_contract(): void
     {
         Sanctum::actingAs(User::factory()->create(['company_id' => null]));
