@@ -1,14 +1,27 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { apiClient } from '../api/client';
+import { errorMessage } from '../api/pagination';
+import { usePaginatedList } from '../composables/usePaginatedList';
+import { notifyError, notifySuccess } from '../composables/useNotifications';
+import PaginationControls from '../components/PaginationControls.vue';
+import StatePanel from '../components/StatePanel.vue';
 import type { Company } from '../types/ats';
 import { Building2, Plus, Mail, Phone, Globe, X } from 'lucide-vue-next';
 
-const companies = ref<Company[]>([]);
-const loading = ref(true);
+const {
+  items: companies,
+  meta,
+  links,
+  loading,
+  error,
+  load,
+  goToPage,
+} = usePaginatedList<Company>('/companies');
 
 const showModal = ref(false);
 const saving = ref(false);
+const formError = ref<string | null>(null);
 const form = ref({
   name: '',
   tax_id: '',
@@ -18,25 +31,12 @@ const form = ref({
   description: '',
 });
 
-const loadCompanies = async () => {
-  loading.value = true;
-  try {
-    const res = await apiClient.get('/companies');
-    // Maneja tanto si viene paginado como si viene array directo
-    companies.value = Array.isArray(res.data.data) 
-      ? res.data.data 
-      : (res.data.data?.data || []);
-  } catch (error) {
-    console.error('Error al cargar empresas:', error);
-  } finally {
-    loading.value = false;
-  }
-};
-
-onMounted(loadCompanies);
+onMounted(load);
 
 const saveCompany = async () => {
   saving.value = true;
+  formError.value = null;
+
   try {
     await apiClient.post('/companies', form.value);
     showModal.value = false;
@@ -48,9 +48,11 @@ const saveCompany = async () => {
       website: '',
       description: '',
     };
-    loadCompanies();
-  } catch (error: any) {
-    alert(error.response?.data?.message || 'Error al guardar empresa');
+    notifySuccess('Empresa registrada correctamente.');
+    await load();
+  } catch (caught) {
+    formError.value = errorMessage(caught, 'Error al guardar la empresa.');
+    notifyError(formError.value);
   } finally {
     saving.value = false;
   }
@@ -76,16 +78,18 @@ const saveCompany = async () => {
       </button>
     </div>
 
-    <!-- Loading -->
-    <div v-if="loading" class="text-center py-16 text-slate-400">Cargando empresas...</div>
+    <StatePanel
+      v-if="loading || error || companies.length === 0"
+      :loading="loading"
+      :error="error"
+      :empty="companies.length === 0"
+      loading-label="Cargando empresas..."
+      empty-label="No hay empresas registradas aún. Haz clic en “Nueva Empresa” para agregar la primera."
+      @retry="load"
+    />
 
-    <!-- Empty State -->
-    <div v-else-if="companies.length === 0" class="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-500 text-sm shadow-xs">
-      No hay empresas registradas aún. Haz clic en "Nueva Empresa" para agregar la primera.
-    </div>
-
-    <!-- Cards Grid -->
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <template v-else>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div 
         v-for="c in companies" 
         :key="c.id"
@@ -112,14 +116,17 @@ const saveCompany = async () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+
+      <PaginationControls :meta="meta" :links="links" @change="goToPage" />
+    </template>
 
     <!-- Modal Nueva Empresa -->
     <div v-if="showModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-      <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-xl">
+      <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="company-modal-title">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-base font-bold text-slate-900">Registrar Empresa</h3>
-          <button @click="showModal = false" class="text-slate-400 hover:text-slate-600">
+          <h3 id="company-modal-title" class="text-base font-bold text-slate-900">Registrar Empresa</h3>
+          <button type="button" aria-label="Cerrar" @click="showModal = false" class="text-slate-400 hover:text-slate-600">
             <X :size="18" />
           </button>
         </div>
@@ -156,6 +163,8 @@ const saveCompany = async () => {
             <label class="block text-slate-700 font-semibold mb-1">Descripción</label>
             <textarea v-model="form.description" rows="2" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
           </div>
+
+          <p v-if="formError" class="rounded-lg bg-rose-50 p-2.5 text-xs text-rose-700" role="alert">{{ formError }}</p>
 
           <div class="flex justify-end gap-2 pt-2">
             <button type="button" @click="showModal = false" class="px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">Cancelar</button>

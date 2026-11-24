@@ -2,6 +2,8 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { apiClient } from '../api/client';
+import { errorMessage } from '../api/pagination';
+import { notifyError, notifySuccess } from '../composables/useNotifications';
 import type { Position, CandidateRecommendation } from '../types/ats';
 import { CheckCircle2, XCircle, Sparkles, UserPlus, ArrowLeft } from 'lucide-vue-next';
 
@@ -18,7 +20,7 @@ const loadData = async () => {
   try {
     const [posRes, recRes] = await Promise.all([
       apiClient.get(`/positions/${route.params.id}`),
-      apiClient.get(`/positions/${route.params.id}/recommendations`)
+      apiClient.get(`/positions/${route.params.id}/recommendations`, { params: { limit: 15 } })
     ]);
     position.value = posRes.data.data;
     recommendations.value = recRes.data.data;
@@ -48,8 +50,8 @@ const applyCandidate = async (candidateId: number) => {
     setTimeout(() => {
       router.push('/pipeline');
     }, 1200);
-  } catch (error: any) {
-    alert(error.response?.data?.message || 'Error al postular al candidato.');
+  } catch (error) {
+    notifyError(errorMessage(error, 'Error al postular al candidato.'));
   } finally {
     applyingCandidateId.value = null;
   }

@@ -168,6 +168,22 @@ class MatchingTest extends TestCase
             ]);
     }
 
+    public function test_recommendations_reject_invalid_limits(): void
+    {
+        Sanctum::actingAs(User::factory()->create(['company_id' => null]));
+
+        $company = Company::create(['name' => 'TalentFlow']);
+        $position = $this->makePosition($company);
+
+        $this->getJson("/api/v1/positions/{$position->id}/recommendations?limit=0")
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['limit']);
+
+        $this->getJson("/api/v1/positions/{$position->id}/recommendations?limit=51")
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['limit']);
+    }
+
     private function makePosition(Company $company, array $attributes = []): Position
     {
         return $company->positions()->create(array_merge([

@@ -1,14 +1,28 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { apiClient } from '../api/client';
+import { errorMessage } from '../api/pagination';
+import { usePaginatedList } from '../composables/usePaginatedList';
+import { notifyError, notifySuccess } from '../composables/useNotifications';
+import PaginationControls from '../components/PaginationControls.vue';
+import StatePanel from '../components/StatePanel.vue';
+import type { Interview } from '../types/ats';
 import { Calendar, Video, Star, CheckCircle, X } from 'lucide-vue-next';
 
-const interviews = ref<any[]>([]);
-const loading = ref(true);
+const {
+  items: interviews,
+  meta,
+  links,
+  loading,
+  error,
+  load,
+  goToPage,
+} = usePaginatedList<Interview>('/interviews');
 
-// Modal Feedback
 const showFeedbackModal = ref(false);
-const selectedInterview = ref<any>(null);
+const selectedInterview = ref<Interview | null>(null);
+const savingFeedback = ref(false);
+const formError = ref<string | null>(null);
 const feedbackForm = ref({
   score: 8,
   strengths: '',
@@ -16,24 +30,15 @@ const feedbackForm = ref({
   general_notes: '',
   recommendation: 'approved',
 });
-const savingFeedback = ref(false);
 
-const loadInterviews = async () => {
-  loading.value = true;
-  try {
-    const res = await apiClient.get('/interviews');
-    interviews.value = res.data.data.data;
-  } catch (error) {
-    console.error(error);
-  } finally {
-    loading.value = false;
-  }
-};
+const dateFormatter = new Intl.DateTimeFormat('es', { dateStyle: 'medium', timeStyle: 'short' });
+const formatDate = (value: string) => dateFormatter.format(new Date(value));
 
-onMounted(loadInterviews);
+onMounted(load);
 
-const openFeedbackModal = (interview: any) => {
+const openFeedbackModal = (interview: Interview) => {
   selectedInterview.value = interview;
+  formError.value = null;
   feedbackForm.value = {
     score: 8,
     strengths: '',
@@ -47,18 +52,16 @@ const openFeedbackModal = (interview: any) => {
 const submitFeedback = async () => {
   if (!selectedInterview.value) return;
   savingFeedback.value = true;
+  formError.value = null;
+
   try {
-    await apiClient.post(`/interviews/${selectedInterview.value.id}/feedback`, {
-      score: feedbackForm.value.score,
-      strengths: feedbackForm.value.strengths,
-      weaknesses: feedbackForm.value.weaknesses,
-      general_notes: feedbackForm.value.general_notes,
-      recommendation: feedbackForm.value.recommendation,
-    });
+    await apiClient.post(`/interviews/${selectedInterview.value.id}/feedback`, feedbackForm.value);
     showFeedbackModal.value = false;
-    loadInterviews();
-  } catch (error: any) {
-    alert(error.response?.data?.message || 'Error al guardar el feedback.');
+    notifySuccess('Evaluación registrada correctamente.');
+    await load();
+  } catch (caught) {
+    formError.value = errorMessage(caught, 'Error al guardar el feedback.');
+    notifyError(formError.value);
   } finally {
     savingFeedback.value = false;
   }
@@ -74,9 +77,18 @@ const submitFeedback = async () => {
       <p class="text-slate-400 text-sm">Monitorea sesiones agendadas y registra feedback de evaluación.</p>
     </div>
 
-    <div v-if="loading" class="text-center py-16 text-slate-500">Cargando agenda...</div>
+    <StatePanel
+      v-if="loading || error || interviews.length === 0"
+      :loading="loading"
+      :error="error"
+      :empty="interviews.length === 0"
+      loading-label="Cargando agenda..."
+      empty-label="No hay entrevistas programadas."
+      @retry="load"
+    />
 
-    <div v-else class="space-y-3">
+    <template v-else>
+      <div class="space-y-3">
       <div 
         v-for="item in interviews" 
         :key="item.id"
@@ -102,7 +114,7 @@ const submitFeedback = async () => {
 
           <div class="flex items-center gap-4 mt-3 text-xs text-slate-400">
             <span class="flex items-center gap-1.5">
-              <Calendar :size="13" class="text-slate-500" /> {{ new Date(item.scheduled_at).toLocaleString() }}
+              <Calendar :size="13" class="text-slate-500" /> {{ formatDate(item.scheduled_at) }}
             </span>
             <a 
               v-if="item.location_or_link" 
@@ -133,14 +145,17 @@ const submitFeedback = async () => {
           </button>
         </div>
       </div>
-    </div>
+      </div>
+
+      <PaginationControls :meta="meta" :links="links" @change="goToPage" />
+    </template>
 
     <!-- Modal Scorecard Feedback -->
     <div v-if="showFeedbackModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full p-6 shadow-xl">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full p-6 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-bold text-white">Rúbrica de Entrevista</h3>
-          <button @click="showFeedbackModal = false" class="text-slate-400 hover:text-white">
+          <h3 id="feedback-modal-title" class="text-lg font-bold text-white">Rúbrica de Entrevista</h3>
+          <button type="button" aria-label="Cerrar" @click="showFeedbackModal = false" class="text-slate-400 hover:text-white">
             <X :size="18" />
           </button>
         </div>
@@ -174,6 +189,8 @@ const submitFeedback = async () => {
             <label class="block text-slate-300 font-medium mb-1">Notas Generales</label>
             <textarea v-model="feedbackForm.general_notes" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white"></textarea>
           </div>
+
+          <p v-if="formError" class="rounded-lg bg-rose-500/10 p-2.5 text-xs text-rose-300" role="alert">{{ formError }}</p>
 
           <div class="flex justify-end gap-2 pt-2">
             <button type="button" @click="showFeedbackModal = false" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Cancelar</button>

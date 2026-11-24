@@ -1,17 +1,32 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { apiClient } from '../api/client';
+import { errorMessage, unwrapItem, unwrapPaginated } from '../api/pagination';
+import { usePaginatedList } from '../composables/usePaginatedList';
+import { notifyError, notifySuccess } from '../composables/useNotifications';
+import PaginationControls from '../components/PaginationControls.vue';
+import StatePanel from '../components/StatePanel.vue';
 import type { Candidate, Skill } from '../types/ats';
 import { Users, UserPlus, Search, Mail, Phone, MapPin, DollarSign, X } from 'lucide-vue-next';
 
-const candidates = ref<Candidate[]>([]);
 const availableSkills = ref<Skill[]>([]);
-const loading = ref(true);
 const searchQuery = ref('');
 
-// Modal de Creación
+const listParams = () => (searchQuery.value ? { search: searchQuery.value } : {});
+const {
+  items: candidates,
+  meta,
+  links,
+  page,
+  loading,
+  error,
+  load,
+  goToPage,
+} = usePaginatedList<Candidate>('/candidates', listParams);
+
 const showCreateModal = ref(false);
 const saving = ref(false);
+const formError = ref<string | null>(null);
 const form = ref({
   first_name: '',
   last_name: '',
@@ -23,36 +38,26 @@ const form = ref({
   selected_skills: [] as { skill_id: number; years_experience: number; level: string }[],
 });
 
-const loadData = async () => {
-  loading.value = true;
-  try {
-    const [candRes, skillsRes] = await Promise.all([
-      apiClient.get('/candidates', { params: searchQuery.value ? { search: searchQuery.value } : {} }),
-      apiClient.get('/skills')
-    ]);
-    candidates.value = candRes.data.data.data;
-    availableSkills.value = skillsRes.data.data.data;
-  } catch (error) {
-    console.error('Error loading candidates:', error);
-  } finally {
-    loading.value = false;
-  }
+const loadSkills = async () => {
+  const response = await apiClient.get('/skills');
+  availableSkills.value = unwrapPaginated<Skill>(response as { data: { data: { data: Skill[] } } }).data;
 };
 
-onMounted(loadData);
+onMounted(async () => {
+  await Promise.all([load(), loadSkills()]);
+});
 
-const handleSearch = () => {
-  loadData();
+const handleSearch = async () => {
+  page.value = 1;
+  await load();
 };
 
 const addSkillField = () => {
-  if (availableSkills.value.length > 0) {
-    form.value.selected_skills.push({
-      skill_id: availableSkills.value[0].id,
-      years_experience: 1,
-      level: 'intermediate',
-    });
-  }
+  form.value.selected_skills.push({
+    skill_id: 0,
+    years_experience: 1,
+    level: 'intermediate',
+  });
 };
 
 const removeSkillField = (index: number) => {
@@ -60,9 +65,18 @@ const removeSkillField = (index: number) => {
 };
 
 const saveCandidate = async () => {
+  formError.value = null;
+
+  if (form.value.selected_skills.some((skill) => !skill.skill_id)) {
+    formError.value = 'Selecciona una habilidad para cada fila agregada.';
+    notifyError(formError.value);
+    return;
+  }
+
   saving.value = true;
+
   try {
-    const res = await apiClient.post('/candidates', {
+    const response = await apiClient.post('/candidates', {
       first_name: form.value.first_name,
       last_name: form.value.last_name,
       email: form.value.email,
@@ -72,10 +86,10 @@ const saveCandidate = async () => {
       summary: form.value.summary,
     });
 
-    const newCandidateId = res.data.data.id;
+    const newCandidate = unwrapItem<{ id: number }>(response as { data: { data: { id: number } } });
 
     if (form.value.selected_skills.length > 0) {
-      await apiClient.post(`/candidates/${newCandidateId}/skills`, {
+      await apiClient.post(`/candidates/${newCandidate.id}/skills`, {
         skills: form.value.selected_skills,
       });
     }
@@ -91,9 +105,11 @@ const saveCandidate = async () => {
       summary: '',
       selected_skills: [],
     };
-    loadData();
-  } catch (error: any) {
-    alert(error.response?.data?.message || 'Error al guardar el candidato');
+    notifySuccess('Candidato registrado correctamente.');
+    await load();
+  } catch (caught) {
+    formError.value = errorMessage(caught, 'Error al guardar el candidato.');
+    notifyError(formError.value);
   } finally {
     saving.value = false;
   }
@@ -122,19 +138,28 @@ const saveCandidate = async () => {
     <!-- Buscador -->
     <div class="mb-6 flex items-center gap-3 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 max-w-md">
       <Search :size="18" class="text-slate-400" />
-      <input 
-        v-model="searchQuery" 
+      <input
+        v-model="searchQuery"
         @keyup.enter="handleSearch"
-        type="text" 
-        placeholder="Buscar por nombre o email..." 
+        type="search"
+        aria-label="Buscar candidatos por nombre o email"
+        placeholder="Buscar por nombre o email..."
         class="bg-transparent border-none outline-none text-sm text-white w-full placeholder-slate-500"
       />
     </div>
 
-    <!-- Listado -->
-    <div v-if="loading" class="text-center py-16 text-slate-500">Cargando base de datos...</div>
+    <StatePanel
+      v-if="loading || error || candidates.length === 0"
+      :loading="loading"
+      :error="error"
+      :empty="candidates.length === 0"
+      loading-label="Cargando base de datos..."
+      empty-label="No hay candidatos que coincidan con la búsqueda."
+      @retry="load"
+    />
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <template v-else>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div 
         v-for="cand in candidates" 
         :key="cand.id" 
@@ -167,14 +192,17 @@ const saveCandidate = async () => {
           <span v-else class="text-slate-500">Sin pretensión fijada</span>
         </div>
       </div>
-    </div>
+      </div>
+
+      <PaginationControls :meta="meta" :links="links" @change="goToPage" />
+    </template>
 
     <!-- Modal Nuevo Candidato -->
     <div v-if="showCreateModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-xl w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-xl w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="candidate-modal-title">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-bold text-white">Registrar Candidato</h3>
-          <button @click="showCreateModal = false" class="text-slate-400 hover:text-white">
+          <h3 id="candidate-modal-title" class="text-lg font-bold text-white">Registrar Candidato</h3>
+          <button type="button" aria-label="Cerrar" @click="showCreateModal = false" class="text-slate-400 hover:text-white">
             <X :size="18" />
           </button>
         </div>
@@ -226,7 +254,8 @@ const saveCandidate = async () => {
             </div>
 
             <div v-for="(sk, idx) in form.selected_skills" :key="idx" class="flex items-center gap-2 mb-2 bg-slate-950 p-2 rounded-lg border border-slate-800">
-              <select v-model="sk.skill_id" class="bg-slate-900 border border-slate-700 text-white rounded p-1.5 flex-1">
+              <select v-model="sk.skill_id" class="bg-slate-900 border border-slate-700 text-white rounded p-1.5 flex-1" :aria-label="`Habilidad ${idx + 1}`">
+                <option :value="0" disabled>Selecciona habilidad</option>
                 <option v-for="s in availableSkills" :key="s.id" :value="s.id">{{ s.name }}</option>
               </select>
               <input type="number" v-model="sk.years_experience" min="1" max="20" placeholder="Años" class="w-16 bg-slate-900 border border-slate-700 text-white rounded p-1.5 text-center" />
@@ -235,6 +264,8 @@ const saveCandidate = async () => {
               </button>
             </div>
           </div>
+
+          <p v-if="formError" class="rounded-lg bg-rose-500/10 p-2.5 text-xs text-rose-300" role="alert">{{ formError }}</p>
 
           <div class="flex justify-end gap-2 pt-3">
             <button type="button" @click="showCreateModal = false" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Cancelar</button>

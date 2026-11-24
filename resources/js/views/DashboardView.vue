@@ -1,24 +1,34 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { apiClient } from '../api/client';
-import { 
-  Briefcase, Users, Calendar, TrendingUp, 
-  Video, ChevronRight 
+import { errorMessage } from '../api/pagination';
+import StatePanel from '../components/StatePanel.vue';
+import type { DashboardData } from '../types/ats';
+import {
+  Briefcase, Users, Calendar, TrendingUp,
+  Video, ChevronRight
 } from 'lucide-vue-next';
 
-const data = ref<any>(null);
+const data = ref<DashboardData | null>(null);
 const loading = ref(true);
+const error = ref<string | null>(null);
 
-onMounted(async () => {
+const loadDashboard = async () => {
+  loading.value = true;
+  error.value = null;
+
   try {
-    const res = await apiClient.get('/dashboard');
-    data.value = res.data;
-  } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
+    const response = await apiClient.get('/dashboard');
+    data.value = response.data as DashboardData;
+  } catch (caught) {
+    error.value = errorMessage(caught, 'No se pudieron cargar las métricas.');
+    data.value = null;
   } finally {
     loading.value = false;
   }
-});
+};
+
+onMounted(loadDashboard);
 </script>
 
 <template>
@@ -28,9 +38,17 @@ onMounted(async () => {
       <p class="text-slate-500 text-sm">Resumen operativo, embudo de selección y próximas reuniones.</p>
     </div>
 
-    <div v-if="loading" class="text-center py-16 text-slate-400">Cargando métricas...</div>
+    <StatePanel
+      v-if="loading || error || !data"
+      :loading="loading"
+      :error="error"
+      :empty="!loading && !error && !data"
+      loading-label="Cargando métricas..."
+      empty-label="No hay métricas disponibles."
+      @retry="loadDashboard"
+    />
 
-    <div v-else-if="data" class="space-y-6">
+    <div v-else class="space-y-6">
       <!-- KPIs -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-xs">

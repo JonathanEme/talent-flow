@@ -1,18 +1,32 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { apiClient } from '../api/client';
-import { 
-  DollarSign, Plus, CheckCircle, XCircle, Send, 
-  FileText, Calendar, X, Building2 
+import { errorMessage } from '../api/pagination';
+import { usePaginatedList } from '../composables/usePaginatedList';
+import { notifyError, notifySuccess } from '../composables/useNotifications';
+import PaginationControls from '../components/PaginationControls.vue';
+import StatePanel from '../components/StatePanel.vue';
+import type { Application, Offer } from '../types/ats';
+import {
+  DollarSign, Plus, CheckCircle, XCircle, Send,
+  Calendar, X, Building2
 } from 'lucide-vue-next';
 
-const offers = ref<any[]>([]);
-const applications = ref<any[]>([]);
-const loading = ref(true);
+const {
+  items: offers,
+  meta,
+  links,
+  loading,
+  error,
+  load,
+  goToPage,
+} = usePaginatedList<Offer>('/offers');
+const { items: applications, load: loadApplications } = usePaginatedList<Application>('/applications');
 
-// Modal Crear Oferta
 const showCreateModal = ref(false);
 const saving = ref(false);
+const formError = ref<string | null>(null);
+const pendingOfferId = ref<number | null>(null);
 const form = ref({
   application_id: '',
   salary_offered: '',
@@ -23,35 +37,21 @@ const form = ref({
   terms_and_conditions: '',
 });
 
-// Modal Declinar Oferta
 const showDeclineModal = ref(false);
-const selectedOfferToDecline = ref<any>(null);
+const selectedOfferToDecline = ref<Offer | null>(null);
 const declineReason = ref('');
 
-const loadData = async () => {
-  loading.value = true;
-  try {
-    const [offersRes, appsRes] = await Promise.all([
-      apiClient.get('/offers'),
-      apiClient.get('/applications')
-    ]);
-    offers.value = offersRes.data.data.data;
-    applications.value = appsRes.data.data.data;
+const currencyFormatter = new Intl.NumberFormat('es');
+const formatSalary = (offer: Offer) => `${offer.currency} ${currencyFormatter.format(Number(offer.salary_offered))}`;
 
-    if (applications.value.length > 0) {
-      form.value.application_id = String(applications.value[0].id);
-    }
-  } catch (error) {
-    console.error('Error loading offers:', error);
-  } finally {
-    loading.value = false;
-  }
-};
-
-onMounted(loadData);
+onMounted(async () => {
+  await Promise.all([load(), loadApplications()]);
+});
 
 const createOffer = async () => {
   saving.value = true;
+  formError.value = null;
+
   try {
     await apiClient.post('/offers', {
       application_id: form.value.application_id,
@@ -72,15 +72,20 @@ const createOffer = async () => {
       benefits_summary: '',
       terms_and_conditions: '',
     };
-    loadData();
-  } catch (error: any) {
-    alert(error.response?.data?.message || 'Error al emitir la oferta.');
+    notifySuccess('Oferta emitida correctamente.');
+    await load();
+  } catch (caught) {
+    formError.value = errorMessage(caught, 'Error al emitir la oferta.');
+    notifyError(formError.value);
   } finally {
     saving.value = false;
   }
 };
 
 const updateStatus = async (offerId: number, status: string, reason: string | null = null) => {
+  if (pendingOfferId.value !== null) return;
+  pendingOfferId.value = offerId;
+
   try {
     await apiClient.patch(`/offers/${offerId}/status`, {
       status,
@@ -88,13 +93,16 @@ const updateStatus = async (offerId: number, status: string, reason: string | nu
     });
     showDeclineModal.value = false;
     declineReason.value = '';
-    loadData();
-  } catch (error: any) {
-    alert(error.response?.data?.message || 'Error al actualizar el estado de la oferta.');
+    notifySuccess('Estado de la oferta actualizado.');
+    await load();
+  } catch (caught) {
+    notifyError(errorMessage(caught, 'Error al actualizar el estado de la oferta.'));
+  } finally {
+    pendingOfferId.value = null;
   }
 };
 
-const openDeclineModal = (offer: any) => {
+const openDeclineModal = (offer: Offer) => {
   selectedOfferToDecline.value = offer;
   declineReason.value = '';
   showDeclineModal.value = true;
@@ -120,14 +128,18 @@ const openDeclineModal = (offer: any) => {
       </button>
     </div>
 
-    <!-- Lista de Ofertas -->
-    <div v-if="loading" class="text-center py-16 text-slate-500">Cargando propuestas...</div>
+    <StatePanel
+      v-if="loading || error || offers.length === 0"
+      :loading="loading"
+      :error="error"
+      :empty="offers.length === 0"
+      loading-label="Cargando propuestas..."
+      empty-label="No hay ofertas formales emitidas todavía."
+      @retry="load"
+    />
 
-    <div v-else-if="offers.length === 0" class="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center text-slate-400 text-sm">
-      No hay ofertas formales emitidas todavía.
-    </div>
-
-    <div v-else class="space-y-4">
+    <template v-else>
+      <div class="space-y-4">
       <div 
         v-for="offer in offers" 
         :key="offer.id"
@@ -158,7 +170,7 @@ const openDeclineModal = (offer: any) => {
 
           <div class="flex flex-wrap items-center gap-4 mt-3 text-xs text-slate-400">
             <span class="text-emerald-400 font-bold text-sm">
-              {{ offer.currency }} {{ Number(offer.salary_offered).toLocaleString() }}
+              {{ formatSalary(offer) }}
             </span>
             <span class="flex items-center gap-1">
               <Calendar :size="13" class="text-slate-500" /> Ingreso: {{ offer.start_date }}
@@ -172,39 +184,45 @@ const openDeclineModal = (offer: any) => {
 
         <!-- Acciones del Recruiter -->
         <div class="flex items-center gap-2 self-end md:self-center">
-          <button 
+          <button
             v-if="offer.status === 'draft'"
             @click="updateStatus(offer.id, 'sent')"
-            class="bg-sky-600 hover:bg-sky-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
+            :disabled="pendingOfferId !== null"
+            class="bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
           >
             <Send :size="13" /> Marcar como Enviada
           </button>
 
-          <button 
+          <button
             v-if="offer.status === 'sent'"
             @click="updateStatus(offer.id, 'accepted')"
-            class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
+            :disabled="pendingOfferId !== null"
+            class="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
           >
             <CheckCircle :size="13" /> Candidato Aceptó
           </button>
 
-          <button 
+          <button
             v-if="offer.status === 'sent'"
             @click="openDeclineModal(offer)"
-            class="bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
+            :disabled="pendingOfferId !== null"
+            class="bg-rose-600/20 hover:bg-rose-600 disabled:opacity-50 text-rose-400 hover:text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
           >
             <XCircle :size="13" /> Candidato Declinó
           </button>
         </div>
       </div>
-    </div>
+      </div>
+
+      <PaginationControls :meta="meta" :links="links" @change="goToPage" />
+    </template>
 
     <!-- Modal Emitir Oferta -->
     <div v-if="showCreateModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+      <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="offer-modal-title">
         <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-bold text-white">Emitir Oferta Formal</h3>
-          <button @click="showCreateModal = false" class="text-slate-400 hover:text-white">
+          <h3 id="offer-modal-title" class="text-lg font-bold text-white">Emitir Oferta Formal</h3>
+          <button type="button" aria-label="Cerrar" @click="showCreateModal = false" class="text-slate-400 hover:text-white">
             <X :size="18" />
           </button>
         </div>
@@ -213,6 +231,7 @@ const openDeclineModal = (offer: any) => {
           <div>
             <label class="block text-slate-300 font-medium mb-1">Candidatura en Proceso</label>
             <select v-model="form.application_id" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-sky-500">
+              <option value="" disabled>Selecciona una candidatura</option>
               <option v-for="app in applications" :key="app.id" :value="app.id">
                 {{ app.candidate?.first_name }} {{ app.candidate?.last_name }} — {{ app.position?.title }}
               </option>
@@ -255,6 +274,8 @@ const openDeclineModal = (offer: any) => {
             <textarea v-model="form.terms_and_conditions" rows="2" placeholder="Período de prueba, cláusulas de confidencialidad..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white"></textarea>
           </div>
 
+          <p v-if="formError" class="rounded-lg bg-rose-500/10 p-2.5 text-xs text-rose-300" role="alert">{{ formError }}</p>
+
           <div class="flex justify-end gap-2 pt-2">
             <button type="button" @click="showCreateModal = false" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Cancelar</button>
             <button type="submit" :disabled="saving" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold">
@@ -267,17 +288,17 @@ const openDeclineModal = (offer: any) => {
 
     <!-- Modal Declinar Oferta -->
     <div v-if="showDeclineModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-md w-full p-6 shadow-xl">
-        <h3 class="text-base font-bold text-white mb-2">Registrar Declinación de Oferta</h3>
+      <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-md w-full p-6 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="decline-modal-title">
+        <h3 id="decline-modal-title" class="text-base font-bold text-white mb-2">Registrar Declinación de Oferta</h3>
         <p class="text-xs text-slate-400 mb-4">Ingresa el motivo por el cual el candidato rechazó la propuesta (contraoferta, salario bajo, etc.):</p>
 
         <textarea v-model="declineReason" rows="3" required placeholder="Motivo del rechazo..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white outline-none focus:border-rose-500 mb-4"></textarea>
 
         <div class="flex justify-end gap-2 text-xs">
-          <button @click="showDeclineModal = false" class="px-3 py-2 rounded bg-slate-800 text-slate-300">Cancelar</button>
-          <button 
-            @click="updateStatus(selectedOfferToDecline.id, 'declined', declineReason)" 
-            :disabled="!declineReason.trim()"
+          <button type="button" @click="showDeclineModal = false" class="px-3 py-2 rounded bg-slate-800 text-slate-300">Cancelar</button>
+          <button
+            @click="selectedOfferToDecline && updateStatus(selectedOfferToDecline.id, 'declined', declineReason)"
+            :disabled="!declineReason.trim() || pendingOfferId !== null"
             class="px-4 py-2 rounded bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-semibold"
           >
             Confirmar Declinación

@@ -6,6 +6,7 @@ import {
   Building2, Calendar, DollarSign, LogOut, UserRound
 } from 'lucide-vue-next';
 import { fetchMe, logout, type AuthUser } from './api/auth';
+import ToastHost from './components/ToastHost.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -110,5 +111,6 @@ const signOut = async () => {
     <main class="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8">
       <router-view />
     </main>
+    <ToastHost />
   </div>
 </template>
