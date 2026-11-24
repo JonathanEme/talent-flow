@@ -16,7 +16,7 @@ class InterviewController extends Controller
             'application.candidate',
             'application.position',
             'interviewer',
-            'feedback',
+            'feedbacks',
         ]);
 
         if ($request->filled('application_id')) {
@@ -64,7 +64,7 @@ class InterviewController extends Controller
         $this->ensureInterview($interview);
 
         return response()->json([
-            'data' => $interview->load(['application.candidate', 'application.position', 'interviewer', 'feedback.evaluator']),
+            'data' => $interview->load(['application.candidate', 'application.position', 'interviewer', 'feedbacks.evaluator']),
         ]);
     }
 
@@ -83,7 +83,7 @@ class InterviewController extends Controller
         $interview->update($validated);
 
         return response()->json([
-            'data' => $interview->fresh(['application.candidate', 'interviewer', 'feedback']),
+            'data' => $interview->fresh(['application.candidate', 'interviewer', 'feedbacks']),
         ]);
     }
 }

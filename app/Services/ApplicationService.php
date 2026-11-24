@@ -2,102 +2,208 @@
 
 namespace App\Services;
 
+use App\Enums\ApplicationStage;
+use App\Exceptions\InvalidTransitionException;
 use App\Models\Application;
 use App\Models\ApplicationStageLog;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ApplicationService
 {
-    /**
-     * Mueve una postulación a una nueva etapa y genera el registro en el log.
-     */
-    public function transitionStage(Application $application, string $newStage, ?int $userId = null, ?string $comment = null): Application
+    public function initialize(Application $application, ?int $userId = null, ?string $comment = null): Application
     {
-        return DB::transaction(function () use ($application, $newStage, $userId, $comment) {
-            $previousStage = $application->stage;
+        return DB::transaction(function () use ($application, $userId, $comment): Application {
+            $locked = $this->lockApplication($application);
 
-            if ($previousStage === $newStage) {
-                return $application;
+            $alreadyLogged = $locked->stageLogs()
+                ->whereNull('from_stage')
+                ->where('to_stage', $locked->stage->value)
+                ->exists();
+
+            if (! $alreadyLogged) {
+                $this->createLog($locked, null, $locked->stage, $userId, $comment);
             }
 
-            $application->update([
-                'stage' => $newStage,
-            ]);
-
-            ApplicationStageLog::create([
-                'application_id' => $application->id,
-                'user_id' => $userId,
-                'from_stage' => $previousStage,
-                'to_stage' => $newStage,
-                'comment' => $comment,
-            ]);
-
-            return $application->fresh(['candidate', 'position', 'stageLogs.user']);
+            return $this->freshApplication($locked);
         });
     }
 
-    /**
-     * Construye un timeline unificado (movimientos de etapa, entrevistas realizadas y notas).
-     */
+    public function transitionStage(
+        Application $application,
+        ApplicationStage|string $newStage,
+        ?int $userId = null,
+        ?string $comment = null,
+        array $attributes = []
+    ): Application {
+        $newStage = $newStage instanceof ApplicationStage ? $newStage : ApplicationStage::from($newStage);
+
+        return DB::transaction(function () use ($application, $newStage, $userId, $comment, $attributes): Application {
+            $locked = $this->lockApplication($application);
+            $currentStage = $locked->stage;
+
+            if ($currentStage === $newStage) {
+                return $this->freshApplication($locked);
+            }
+
+            if (! $currentStage->canTransitionTo($newStage)) {
+                throw InvalidTransitionException::for('la postulación', $currentStage->value, $newStage->value);
+            }
+
+            $locked->update(array_merge($attributes, [
+                'stage' => $newStage->value,
+                'status' => $newStage->status()->value,
+            ]));
+
+            $this->createLog($locked, $currentStage, $newStage, $userId, $comment);
+
+            return $this->freshApplication($locked);
+        });
+    }
+
+    public function logEvent(Application $application, string $event, ?int $userId = null, ?string $comment = null): Application
+    {
+        return DB::transaction(function () use ($application, $event, $userId, $comment): Application {
+            $locked = $this->lockApplication($application);
+
+            $this->createLog($locked, $locked->stage, $event, $userId, $comment);
+
+            return $this->freshApplication($locked);
+        });
+    }
+
     public function getUnifiedTimeline(Application $application): array
     {
         $application->load([
             'stageLogs.user',
-            'interviews.feedback.evaluator',
+            'interviews.feedbacks.evaluator',
             'interviews.interviewer',
+            'offers',
         ]);
 
         $timeline = [];
 
-        // 1. Eventos de cambio de etapa
         foreach ($application->stageLogs as $log) {
             $timeline[] = [
-                'type' => 'stage_change',
-                'title' => "Movido a etapa: " . ucfirst(str_replace('_', ' ', $log->to_stage)),
+                'type' => str_starts_with((string) $log->to_stage, 'offer_') ? 'offer_event' : 'stage_change',
+                'title' => $this->stageLogTitle($log->to_stage),
                 'details' => [
                     'from_stage' => $log->from_stage,
                     'to_stage' => $log->to_stage,
                     'comment' => $log->comment,
-                    'actor' => $log->user ? $log->user->name : 'Sistema / Reclutador',
+                    'actor' => $log->user?->name ?? 'Sistema / Reclutador',
                 ],
                 'timestamp' => $log->created_at->toIso8601String(),
             ];
         }
 
-        // 2. Eventos de entrevistas y feedback
         foreach ($application->interviews as $interview) {
+            $interviewLabel = ucfirst(str_replace('_', ' ', $interview->type));
+
             $timeline[] = [
-                'type' => 'interview_scheduled',
-                'title' => "Entrevista agendada (" . ucfirst($interview->type) . ")",
+                'type' => 'interview',
+                'title' => $this->interviewTitle($interview->status, $interviewLabel),
                 'details' => [
                     'type' => $interview->type,
                     'scheduled_at' => $interview->scheduled_at->toIso8601String(),
                     'interviewer' => $interview->interviewer?->name,
                     'status' => $interview->status,
                 ],
-                'timestamp' => $interview->created_at->toIso8601String(),
+                'timestamp' => $interview->scheduled_at->toIso8601String(),
             ];
 
-            if ($interview->feedback) {
+            foreach ($interview->feedbacks as $feedback) {
                 $timeline[] = [
                     'type' => 'interview_feedback',
-                    'title' => "Feedback de entrevista cargado: Score " . $interview->feedback->score . "/10",
+                    'title' => "Feedback de entrevista cargado: Score {$feedback->score}/10",
                     'details' => [
-                        'score' => $interview->feedback->score,
-                        'recommendation' => $interview->feedback->recommendation,
-                        'notes' => $interview->feedback->general_notes,
-                        'evaluator' => $interview->feedback->evaluator?->name,
+                        'score' => $feedback->score,
+                        'recommendation' => $feedback->recommendation,
+                        'notes' => $feedback->general_notes,
+                        'evaluator' => $feedback->evaluator?->name,
                     ],
-                    'timestamp' => $interview->feedback->created_at->toIso8601String(),
+                    'timestamp' => $feedback->created_at->toIso8601String(),
                 ];
             }
         }
 
-        // Ordenamos cronológicamente descendente (lo más reciente primero)
-        usort($timeline, function ($a, $b) {
-            return strcmp($b['timestamp'], $a['timestamp']);
-        });
+        foreach ($application->offers as $offer) {
+            $timeline[] = [
+                'type' => 'offer',
+                'title' => 'Oferta '.strtolower($offer->status->value)." ({$offer->currency} {$offer->salary_offered})",
+                'details' => [
+                    'offer_id' => $offer->id,
+                    'status' => $offer->status->value,
+                    'salary_offered' => $offer->salary_offered,
+                    'currency' => $offer->currency,
+                    'start_date' => $offer->start_date?->toDateString(),
+                    'decline_reason' => $offer->decline_reason,
+                ],
+                'timestamp' => ($offer->responded_at ?? $offer->created_at)->toIso8601String(),
+            ];
+        }
+
+        if (filled($application->notes)) {
+            $timeline[] = [
+                'type' => 'note',
+                'title' => 'Nota de seguimiento',
+                'details' => [
+                    'notes' => $application->notes,
+                ],
+                'timestamp' => $application->updated_at->toIso8601String(),
+            ];
+        }
+
+        usort($timeline, fn (array $a, array $b): int => Carbon::parse($b['timestamp'])->getTimestamp() <=> Carbon::parse($a['timestamp'])->getTimestamp());
 
         return $timeline;
+    }
+
+    private function lockApplication(Application $application): Application
+    {
+        return Application::query()->whereKey($application->id)->lockForUpdate()->firstOrFail();
+    }
+
+    private function freshApplication(Application $application): Application
+    {
+        return $application->fresh(['candidate', 'position', 'stageLogs.user']);
+    }
+
+    private function createLog(
+        Application $application,
+        ApplicationStage|string|null $from,
+        ApplicationStage|string $to,
+        ?int $userId,
+        ?string $comment
+    ): void {
+        ApplicationStageLog::create([
+            'application_id' => $application->id,
+            'user_id' => $userId,
+            'from_stage' => $from instanceof ApplicationStage ? $from->value : $from,
+            'to_stage' => $to instanceof ApplicationStage ? $to->value : $to,
+            'comment' => $comment,
+        ]);
+    }
+
+    private function stageLogTitle(?string $stage): string
+    {
+        return match ($stage) {
+            null => 'Postulación inicial registrada',
+            'offer_created' => 'Oferta formal generada',
+            'offer_sent' => 'Oferta enviada al candidato',
+            'offer_accepted' => 'Oferta aceptada por el candidato',
+            'offer_declined' => 'Oferta declinada por el candidato',
+            default => 'Movido a etapa: '.ucfirst(str_replace('_', ' ', $stage)),
+        };
+    }
+
+    private function interviewTitle(string $status, string $label): string
+    {
+        return match ($status) {
+            'completed' => "Entrevista realizada ({$label})",
+            'canceled' => "Entrevista cancelada ({$label})",
+            'no_show' => "Entrevista no asistida ({$label})",
+            default => "Entrevista agendada ({$label})",
+        };
     }
 }

@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\ApplicationStage;
+use App\Enums\ApplicationStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Application extends Model
 {
@@ -19,6 +23,8 @@ class Application extends Model
 
     protected $casts = [
         'applied_at' => 'date',
+        'status' => ApplicationStatus::class,
+        'stage' => ApplicationStage::class,
     ];
 
     public function position(): BelongsTo
@@ -31,22 +37,22 @@ class Application extends Model
         return $this->belongsTo(Candidate::class);
     }
 
-    public function interviews(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function interviews(): HasMany
     {
         return $this->hasMany(Interview::class);
     }
 
-    public function stageLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function stageLogs(): HasMany
     {
         return $this->hasMany(ApplicationStageLog::class)->orderBy('created_at', 'desc');
     }
 
-    public function offers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function offers(): HasMany
     {
         return $this->hasMany(Offer::class)->latest();
     }
 
-    public function latestOffer(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function latestOffer(): HasOne
     {
         return $this->hasOne(Offer::class)->latestOfMany();
     }

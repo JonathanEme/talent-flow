@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Interview extends Model
 {
@@ -34,8 +34,8 @@ class Interview extends Model
         return $this->belongsTo(User::class, 'interviewer_id');
     }
 
-    public function feedback(): HasOne
+    public function feedbacks(): HasMany
     {
-        return $this->hasOne(InterviewFeedback::class);
+        return $this->hasMany(InterviewFeedback::class)->latest();
     }
 }

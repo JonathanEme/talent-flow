@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\ApplicationStage;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Candidate;
@@ -27,6 +28,9 @@ class DashboardController extends Controller
         $stageDistribution = $this->scopeApplications(Application::query())->select('stage', DB::raw('count(*) as total'))
             ->groupBy('stage')
             ->pluck('total', 'stage')
+            ->mapWithKeys(fn (mixed $total, mixed $stage): array => [
+                $stage instanceof ApplicationStage ? $stage->value : $stage => $total,
+            ])
             ->toArray();
 
         $stageStats = [

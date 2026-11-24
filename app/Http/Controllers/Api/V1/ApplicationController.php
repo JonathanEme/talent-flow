@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\ApplicationStage;
+use App\Enums\ApplicationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Position;
 use App\Services\ApplicationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ApplicationController extends Controller
 {
@@ -41,7 +44,7 @@ class ApplicationController extends Controller
         $validated = $request->validate([
             'position_id' => ['required', 'exists:positions,id'],
             'candidate_id' => ['required', 'exists:candidates,id'],
-            'stage' => ['nullable', 'string', 'in:new,screening,technical_interview,final_interview,offer'],
+            'stage' => ['nullable', 'string', Rule::in(ApplicationStage::initialValues())],
             'notes' => ['nullable', 'string'],
             'applied_at' => ['nullable', 'date'],
         ]);
@@ -64,15 +67,13 @@ class ApplicationController extends Controller
             'position_id' => $validated['position_id'],
             'candidate_id' => $validated['candidate_id'],
             'stage' => $initialStage,
-            'status' => 'active',
+            'status' => ApplicationStatus::Active->value,
             'notes' => $validated['notes'] ?? null,
             'applied_at' => $validated['applied_at'] ?? now()->toDateString(),
         ]);
 
-        // Registrar el primer estado en el log
-        $this->applicationService->transitionStage(
+        $application = $this->applicationService->initialize(
             $application,
-            $initialStage,
             auth()->id(),
             'Postulación inicial registrada.'
         );
@@ -87,14 +88,14 @@ class ApplicationController extends Controller
         $this->ensureApplication($application);
 
         return response()->json([
-            'data' => $application->load(['candidate', 'position.company', 'stageLogs.user', 'interviews.feedback']),
+            'data' => $application->load(['candidate', 'position.company', 'stageLogs.user', 'interviews.feedbacks']),
         ]);
     }
 
     public function updateStage(Request $request, Application $application): JsonResponse
     {
         $validated = $request->validate([
-            'stage' => ['required', 'string', 'in:new,screening,technical_interview,final_interview,offer,rejected,hired'],
+            'stage' => ['required', 'string', Rule::in(ApplicationStage::values())],
             'comment' => ['nullable', 'string'],
         ]);
 

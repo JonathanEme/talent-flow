@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OfferStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -26,6 +27,7 @@ class Offer extends Model
         'start_date' => 'date',
         'expiration_date' => 'date',
         'responded_at' => 'datetime',
+        'status' => OfferStatus::class,
     ];
 
     public function application(): BelongsTo

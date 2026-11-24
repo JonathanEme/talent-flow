@@ -116,11 +116,12 @@ const submitFeedback = async () => {
         </div>
 
         <div class="flex items-center gap-3 self-end md:self-center">
-          <div v-if="item.feedback" class="text-right">
+          <div v-if="item.feedbacks?.length" class="text-right">
             <span class="text-xl font-bold text-amber-400 flex items-center gap-1">
-              <Star :size="18" fill="currentColor" /> {{ item.feedback.score }}/10
+              <Star :size="18" fill="currentColor" /> {{ item.feedbacks[0].score }}/10
             </span>
-            <span class="text-[10px] text-slate-500 uppercase">{{ item.feedback.recommendation }}</span>
+            <span class="text-[10px] text-slate-500 uppercase">{{ item.feedbacks[0].recommendation }}</span>
+            <span class="text-[10px] text-slate-500 uppercase">{{ item.feedbacks.length }} evaluación(es)</span>
           </div>
 
           <button 

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\ApplicationStage;
+use App\Enums\OfferStatus;
+use App\Exceptions\InvalidTransitionException;
 use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\Offer;
@@ -9,6 +12,7 @@ use App\Services\ApplicationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class OfferController extends Controller
 {
@@ -54,20 +58,23 @@ class OfferController extends Controller
         $offer = DB::transaction(function () use ($validated) {
             $offer = Offer::create(array_merge($validated, [
                 'created_by' => auth()->id(),
-                'status' => 'draft',
+                'status' => OfferStatus::Draft->value,
                 'currency' => $validated['currency'] ?? 'USD',
             ]));
 
-            // Movemos la candidatura a la etapa 'offer' si aún no estaba
             $application = Application::findOrFail($validated['application_id']);
-            if ($application->stage !== 'offer') {
-                $this->applicationService->transitionStage(
+            $comment = 'Generada oferta formal por '.($validated['currency'] ?? 'USD').' '.number_format($validated['salary_offered'], 2);
+
+            if ($application->stage !== ApplicationStage::Offer) {
+                $application = $this->applicationService->transitionStage(
                     $application,
-                    'offer',
+                    ApplicationStage::Offer,
                     auth()->id(),
-                    'Generada oferta formal por ' . ($validated['currency'] ?? 'USD') . ' ' . number_format($validated['salary_offered'], 2)
+                    $comment
                 );
             }
+
+            $this->applicationService->logEvent($application, 'offer_created', auth()->id(), $comment);
 
             return $offer;
         });
@@ -90,53 +97,77 @@ class OfferController extends Controller
     public function updateStatus(Request $request, Offer $offer): JsonResponse
     {
         $validated = $request->validate([
-            'status' => ['required', 'in:sent,accepted,declined'],
+            'status' => ['required', 'string', Rule::in(OfferStatus::transitionalValues())],
             'decline_reason' => ['nullable', 'required_if:status,declined', 'string'],
         ]);
 
         $this->ensureOffer($offer);
 
         DB::transaction(function () use ($offer, $validated) {
+            $currentStatus = $offer->status instanceof OfferStatus
+                ? $offer->status
+                : OfferStatus::from($offer->status);
+            $newStatus = OfferStatus::from($validated['status']);
+
+            if (! $currentStatus->canTransitionTo($newStatus)) {
+                throw InvalidTransitionException::for('la oferta', $currentStatus->value, $newStatus->value);
+            }
+
             $offer->update([
-                'status' => $validated['status'],
+                'status' => $newStatus->value,
                 'decline_reason' => $validated['decline_reason'] ?? null,
-                'responded_at' => in_array($validated['status'], ['accepted', 'declined']) ? now() : null,
+                'responded_at' => in_array($newStatus, [OfferStatus::Accepted, OfferStatus::Declined], true) ? now() : null,
             ]);
 
             $application = $offer->application;
 
-            if ($validated['status'] === 'accepted') {
-                $application->update(['status' => 'hired']);
-                $this->applicationService->transitionStage(
+            match ($newStatus) {
+                OfferStatus::Sent => $this->applicationService->logEvent(
                     $application,
-                    'offer',
-                    auth()->id(),
-                    '¡Oferta aceptada por el candidato! Contratación confirmada.'
-                );
-            } elseif ($validated['status'] === 'declined') {
-                $application->update([
-                    'status' => 'rejected',
-                    'rejection_reason' => 'Oferta declinada: ' . ($validated['decline_reason'] ?? 'Sin motivo especificado'),
-                ]);
-                $this->applicationService->transitionStage(
-                    $application,
-                    'offer',
-                    auth()->id(),
-                    'Oferta declinada por el candidato. Motivo: ' . ($validated['decline_reason'] ?? 'No especificado')
-                );
-            } elseif ($validated['status'] === 'sent') {
-                $this->applicationService->transitionStage(
-                    $application,
-                    'offer',
+                    'offer_sent',
                     auth()->id(),
                     'Oferta formal enviada al candidato.'
-                );
-            }
+                ),
+                OfferStatus::Accepted => $this->completeOffer(
+                    $application,
+                    ApplicationStage::Hired,
+                    'offer_accepted',
+                    '¡Oferta aceptada por el candidato! Contratación confirmada.'
+                ),
+                OfferStatus::Declined => $this->completeOffer(
+                    $application,
+                    ApplicationStage::Rejected,
+                    'offer_declined',
+                    'Oferta declinada por el candidato. Motivo: '.($validated['decline_reason'] ?? 'No especificado'),
+                    'Oferta declinada: '.($validated['decline_reason'] ?? 'Sin motivo especificado')
+                ),
+                OfferStatus::Draft => null,
+            };
         });
 
         return response()->json([
             'message' => 'Offer status updated successfully.',
             'data' => $offer->fresh(['application.candidate', 'application.position']),
         ]);
+    }
+
+    private function completeOffer(
+        Application $application,
+        ApplicationStage $stage,
+        string $event,
+        string $comment,
+        ?string $rejectionReason = null
+    ): void {
+        $attributes = $rejectionReason === null ? [] : ['rejection_reason' => $rejectionReason];
+
+        $application = $this->applicationService->transitionStage(
+            $application,
+            $stage,
+            auth()->id(),
+            $comment,
+            $attributes
+        );
+
+        $this->applicationService->logEvent($application, $event, auth()->id(), $comment);
     }
 }
