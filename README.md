@@ -1,209 +1,296 @@
-# Talent Flow
+# TalentFlow
 
-Sistema web para la gestión de procesos de selección, candidatos y postulaciones.
-
-Talent Flow permite centralizar la gestión de posiciones laborales, candidatos y postulaciones, organizando cada proceso de selección mediante etapas y entrevistas.
-
-El proyecto fue desarrollado con **Laravel y PostgreSQL**, aplicando una arquitectura orientada a separar responsabilidades entre las diferentes capas de la aplicación.
+TalentFlow es un **ATS (Applicant Tracking System)** para centralizar posiciones, candidatos, postulaciones, entrevistas y ofertas. Está construido como una **API REST en Laravel 12** consumida por una **SPA en Vue 3 + TypeScript**, con autenticación Sanctum, aislamiento por empresa y un motor de matching explicable.
 
 ---
 
-## 🚀 Características principales
+## Características principales
 
-* Gestión de posiciones laborales.
-* Gestión de candidatos.
-* Registro y seguimiento de postulaciones.
-* Gestión de etapas dentro del proceso de selección.
-* Gestión de entrevistas.
-* Administración de habilidades.
-* Relación entre candidatos y habilidades.
-* Seguimiento del estado de las postulaciones.
-* API REST para las operaciones principales.
-* Persistencia de información mediante PostgreSQL.
-
----
-
-## 🛠️ Tecnologías utilizadas
-
-### Backend
-
-* PHP
-* Laravel
-* REST API
-
-### Base de datos
-
-* PostgreSQL
-
-### Herramientas
-
-* Git
-* Composer
-* Postman
+- **Autenticación** con tokens personales de Laravel Sanctum (`Bearer`).
+- **Aislamiento multiempresa**: los usuarios asociados a una empresa solo ven sus datos; los usuarios globales (`company_id = null`) ven todo.
+- **Gestión de posiciones, candidatos, empresas, habilidades y postulaciones**, con filtros y paginación real.
+- **Pipeline de selección** tipo kanban con **drag & drop nativo**, transiciones válidas hacia adelante y hacia atrás, y auditoría de cada cambio de etapa.
+- **Ranking de candidatos compatibles** con score ponderado, factores explicables, candidatos ya postulados marcados como «En proceso» y enlace directo al pipeline.
+- **Entrevistas** programables desde la agenda y desde el pipeline, con feedback por evaluador.
+- **Ofertas** con ciclo de vida `draft → sent → accepted/declined` y efectos automáticos sobre la postulación.
+- **Timeline unificado** por postulación: cambios de etapa, entrevistas, feedbacks, ofertas y notas.
+- **Dashboard** con KPIs, distribución por etapas, próximas entrevistas y posiciones recientes.
+- **UX consistente**: estados de carga/vacío/error, reintentos, paginación y notificaciones tipo toast.
+- **Calidad automatizada**: Pint, PHPUnit, `vue-tsc` y build de Vite, tanto en local como en GitHub Actions.
 
 ---
 
-## 🏗️ Arquitectura
+## Stack tecnológico
 
-El proyecto utiliza una arquitectura basada en responsabilidades separadas para facilitar el mantenimiento y evolución del sistema.
+| Capa | Tecnología | Versión |
+| --- | --- | --- |
+| Backend | PHP | `^8.2` |
+| Backend | Laravel | `^12.0` |
+| Autenticación | Laravel Sanctum | `^4.0` |
+| Frontend | Vue 3 + Vue Router | `^3.5` / `^4.6` |
+| Frontend | TypeScript + vue-tsc | `^5.9` / `^3.3` |
+| Frontend | Vite + plugin Vue + plugin Laravel | `^7.0` / `^6.0` / `^2.0` |
+| Estilos | Tailwind CSS + PostCSS + Autoprefixer | `^3.4` |
+| Cliente HTTP | Axios | `^1.20` |
+| Base de datos | SQLite por defecto (PostgreSQL/MySQL soportados por configuración) | — |
+| Tests | PHPUnit | `^11.5` |
+| Estilo PHP | Laravel Pint | `^1.24` |
+
+---
+
+## Arquitectura
 
 ```text
-Cliente
-   │
-   ▼
-Routes
-   │
-   ▼
-Controllers
-   │
-   ▼
-Services
-   │
-   ▼
-Models / Eloquent
-   │
-   ▼
-PostgreSQL
+Navegador (SPA Vue 3)
+        │  Authorization: Bearer <token>
+        ▼
+/api/v1
+        │
+        ├─ middleware api.version  → header X-API-Version: 1
+        ├─ throttle:api            → 60 req/min por usuario o IP
+        └─ auth:sanctum            → excepto POST /auth/login (throttle:login, 5 req/min por IP)
+        ▼
+FormRequest (validación)
+        ▼
+Controller Api\V1
+        ▼
+Service (ApplicationService / MatchingService)
+        ▼
+Eloquent + Enums + TenantScope
+        ▼
+Base de datos
 ```
 
-El flujo general de una operación es:
+Puntos de diseño relevantes:
 
-```text
-Request
-   ↓
-Route
-   ↓
-Controller
-   ↓
-Service
-   ↓
-Model
-   ↓
-Database
-   ↓
-Response
-```
+- Las validaciones viven en `app/Http/Requests/Api/V1` (FormRequests); no están duplicadas en controladores.
+- Las respuestas se normalizan con `app/Http/Resources/Api/V1` (`JsonResource::withoutWrapping()` está activo).
+- `app/Support/TenantScope.php` aplica el filtro de empresa y resuelve `company_id` a partir del usuario autenticado, nunca del payload.
+- `app/Enums` define etapas, estados de postulación y estados de oferta; las transiciones inválidas se rechazan con `InvalidTransitionException` (422).
+- El frontend usa `resources/js/api/client.ts`: guarda el token en `localStorage`, lo envía en cada petición y redirige a `/login` cuando recibe un 401.
+- La SPA se monta en `resources/views/welcome.blade.php`; `routes/web.php` actúa como catch-all para las rutas del router de Vue.
 
 ---
 
-## 📂 Estructura del proyecto
+## Estructura del proyecto
 
 ```text
 talent-flow/
-│
 ├── app/
+│   ├── Enums/                       # ApplicationStage, ApplicationStatus, OfferStatus
+│   ├── Exceptions/                  # InvalidTransitionException
 │   ├── Http/
-│   │   └── Controllers/
-│   │
+│   │   ├── Controllers/Api/V1/      # Auth, Dashboard, Companies, Positions, Candidates,
+│   │   │                            # Applications, Skills, Interviews, Offers, Matching...
+│   │   ├── Middleware/              # AddApiVersionHeader
+│   │   ├── Requests/Api/V1/         # FormRequests de validación
+│   │   └── Resources/Api/V1/        # Resources de respuesta
 │   ├── Models/
-│   │
-│   └── Services/
-│
+│   ├── Services/                    # ApplicationService, MatchingService
+│   ├── Support/                     # DomainValues, TenantScope
+│   └── Providers/AppServiceProvider.php
+├── bootstrap/app.php                # throttle api, versión de API, respuestas JSON
+├── config/matching.php              # pesos y reglas del scoring
 ├── database/
 │   ├── migrations/
-│   └── seeders/
-│
+│   ├── factories/
+│   └── seeders/                     # datos de demostración (ver advertencia)
+├── resources/
+│   ├── css/app.css
+│   ├── js/
+│   │   ├── api/                     # client, auth, token, pagination
+│   │   ├── components/              # StatePanel, PaginationControls, ToastHost, InterviewFormModal
+│   │   ├── composables/             # usePaginatedList, useNotifications
+│   │   ├── router/index.ts
+│   │   ├── types/ats.ts
+│   │   └── views/                   # Dashboard, Positions, Pipeline, Candidates, Companies,
+│   │                                # Interviews, Offers, Timeline, Login
+│   └── views/welcome.blade.php      # montaje de la SPA
 ├── routes/
-│   └── api.php
-│
+│   ├── api.php                      # API v1
+│   └── web.php                      # catch-all SPA
 ├── tests/
-│
-├── postman/
-│
-├── .env.example
+│   ├── Concerns/CreatesAtsData.php
+│   └── Feature/Api/                 # contrato, auth, tenant, lifecycle, matching, calidad
+├── .github/workflows/quality.yml
 ├── composer.json
+├── package.json
+├── pint.json
+├── tsconfig.json
+├── vite.config.js
+├── tailwind.config.js
 └── README.md
 ```
 
 ---
 
-## 📋 Módulos principales
+## Modelo de datos
 
-### Positions
-
-Permite administrar las posiciones laborales disponibles dentro del sistema.
-
-### Candidates
-
-Permite registrar y administrar la información de los candidatos.
-
-### Applications
-
-Relaciona candidatos con posiciones y permite realizar el seguimiento de cada postulación.
-
-### Stages
-
-Permite representar las diferentes etapas de un proceso de selección.
-
-### Interviews
-
-Permite registrar entrevistas asociadas al proceso de selección.
-
-### Skills
-
-Permite administrar las habilidades de los candidatos y sus relaciones.
+| Entidad | Función |
+| --- | --- |
+| `Company` | Empresa propietaria de posiciones y usuarios. |
+| `User` | Usuario autenticable; `company_id` nullable define si es global. |
+| `Position` | Vacante con estado, seniority, salario, ubicación/modalidad y requisitos. |
+| `Candidate` | Candidato con experiencia, expectativa salarial, ubicación y habilidades. |
+| `Application` | Postulación de un candidato a una posición; guarda etapa y estado. |
+| `Skill` / `candidate_skills` / `position_requirements` | Habilidades con nivel y años de experiencia. |
+| `Interview` / `InterviewFeedback` | Entrevistas programadas y evaluaciones por entrevistador. |
+| `ApplicationStageLog` | Auditoría de cada transición de etapa. |
+| `Offer` | Oferta económica asociada a una postulación. |
+| `personal_access_tokens` | Tokens Sanctum emitidos por el login. |
 
 ---
 
-## 🗄️ Modelo de datos
+## Flujo de selección
 
-El sistema utiliza PostgreSQL como motor de base de datos.
+Etapas (`ApplicationStage`): `new`, `screening`, `technical_interview`, `final_interview`, `offer`, `hired`, `rejected`.
 
-Las principales entidades del sistema son:
+Transiciones permitidas (incluye retrocesos controlados):
 
 ```text
-Position
-   │
-   └── Applications
-          │
-          └── Candidate
-                 │
-                 └── Skills
-
-Application
-   │
-   └── Stages
-          │
-          └── Interviews
+new                 → screening | rejected
+screening           → new | technical_interview | rejected
+technical_interview → screening | final_interview | rejected
+final_interview     → technical_interview | offer | rejected
+offer               → final_interview | hired | rejected
+hired               → offer
+rejected            → new
 ```
 
-Las relaciones entre las entidades permiten representar el flujo completo de una postulación dentro del proceso de selección.
+Cada cambio pasa por `ApplicationService::transitionStage()`, que valida la transición, bloquea la fila, escribe un `ApplicationStageLog` y sincroniza `status` (`active`, `hired` o `rejected`). El frontend replica el mismo mapa en `PipelineKanbanView.vue` para impedir soltar tarjetas en columnas inválidas.
+
+El ranking de una posición (`PositionDetailView.vue`) muestra candidatos del bucket de talento y también los ya postulados, con `application_id` y `application_stage`. El badge «En proceso» navega a `/pipeline?position=<id>&application=<id>`; el pipeline preselecciona la vacante, resalta la tarjeta y permite limpiar la selección.
+
+Ofertas (`OfferStatus`): `draft → sent → accepted | declined`. Aceptar una oferta contrata la postulación; rechazarla la marca como `rejected` y exige motivo. El estado final es terminal.
 
 ---
 
-## ⚙️ Configuración y ejecución local
+## Matching explicable
+
+`config/matching.php` define los pesos del score:
+
+| Factor | Peso | Criterio resumido |
+| --- | ---: | --- |
+| Requisitos obligatorios | 45 | Cobertura de skills obligatorias y nivel declarado. |
+| Requisitos deseables | 20 | Cobertura de skills opcionales. |
+| Seniority | 15 | Años de experiencia frente a la banda `jr/ssr/sr/lead` de la posición. |
+| Expectativa salarial | 10 | Comparación con el rango de la vacante (tolerancia del 20 %). |
+| Ubicación / modalidad | 10 | Remoto, coincidencia de ubicación, dato vacío o divergente. |
+
+`MatchingService` devuelve `overall_score`, `meets_all_mandatory`, detalle por habilidad y un array `factors` con `label`, `score`, `weight` y `points`, de modo que la UI puede explicar el resultado. Las recomendaciones priorizan candidatos sin postularse y, dentro de cada grupo, ordenan por score; también incluyen a los ya postulados con `already_applied: true`.
+
+---
+
+## API REST v1
+
+Base URL: `http://127.0.0.1:8000/api/v1`.
+
+- Todas las rutas responden JSON y añaden el header `X-API-Version: 1`.
+- Salvo `POST /auth/login`, requieren `Authorization: Bearer <token>`.
+- Throttle: `api` 60 req/min por usuario/IP; `login` 5 req/min por IP.
+- Errores de validación: `422` con campo `errors`; transiciones inválidas: `422` con `message`.
+
+Contratos de respuesta:
+
+```json
+// Listados paginados
+{
+  "data": {
+    "data": [],
+    "links": { "first": "...", "last": "...", "prev": null, "next": null },
+    "meta": { "current_page": 1, "per_page": 15, "total": 0 }
+  }
+}
+```
+
+```json
+// Login y /auth/me
+{
+  "data": {
+    "user": { "id": 1, "name": "..." },
+    "token": "tf_...",
+    "token_type": "Bearer"
+  }
+}
+```
+
+```json
+// Dashboard (JsonResource sin wrapper)
+{
+  "kpis": { "open_positions": 0, "total_candidates": 0, "active_applications": 0, "upcoming_interviews": 0 },
+  "stage_distribution": {},
+  "upcoming_interviews": [],
+  "recent_positions": []
+}
+```
+
+Endpoints disponibles:
+
+| Grupo | Método y ruta |
+| --- | --- |
+| Auth | `POST /auth/login`, `POST /auth/logout`, `GET /auth/me` |
+| Dashboard | `GET /dashboard` |
+| Empresas | `GET|POST /companies`, `GET /companies/{company}` |
+| Posiciones | `GET|POST /positions`, `GET /positions/{position}` |
+| Candidatos | `GET|POST /candidates`, `GET /candidates/{candidate}` |
+| Postulaciones | `GET|POST /applications`, `GET /applications/{application}` |
+| Habilidades | `GET|POST /skills` |
+| Entrevistas | `GET|POST /interviews`, `GET|PATCH /interviews/{interview}`, `POST /interviews/{interview}/feedback` |
+| Ofertas | `GET|POST /offers`, `GET /offers/{offer}`, `PATCH /offers/{offer}/status` |
+| Pipeline | `PATCH /applications/{application}/stage`, `GET /applications/{application}/timeline` |
+| Sincronización | `POST /positions/{position}/requirements`, `POST /candidates/{candidate}/skills` |
+| Matching | `GET /positions/{position}/recommendations`, `GET /positions/{position}/candidates/{candidate}/match` |
+
+Ejemplo de petición:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/auth/login \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"...","password":"..."}'
+```
+
+---
+
+## Rutas de la SPA
+
+`/login`, `/`, `/positions`, `/positions/create`, `/positions/:id`, `/pipeline`, `/candidates`, `/candidates/:id`, `/companies`, `/interviews`, `/offers`, `/applications/:id/timeline`.
+
+---
+
+## Configuración y ejecución local
 
 ### Requisitos
 
-* PHP 8.x
-* Composer
-* PostgreSQL
-* Git
-* Node.js + npm (si se requieren assets)
+- PHP 8.2+ con extensiones `mbstring`, `dom`, `fileinfo`, `pdo_sqlite` (o `pdo_pgsql` si usas PostgreSQL).
+- Composer.
+- Node.js 20+ y npm (CI usa Node 20).
+- SQLite (por defecto) o PostgreSQL/MySQL si se configura explícitamente.
 
-### 1. Clonar el repositorio
+### Opción rápida
 
 ```bash
-git clone https://github.com/JonathanEme/talent-flow.git
-
-cd talent-flow
+composer setup
+composer dev
 ```
 
-### 2. Instalar dependencias
+`composer setup` instala dependencias PHP, crea `.env` si no existe, genera la clave, migra, instala dependencias JS y compila los assets. `composer dev` levanta `php artisan serve` y Vite en paralelo. **No ejecuta seeders**: hazlo manualmente si quieres datos de demostración.
+
+### Paso a paso
 
 ```bash
 composer install
+cp .env.example .env          # Windows: Copy-Item .env.example .env
+php artisan key:generate
 ```
 
-### 3. Configurar el entorno
-
-Copiar el archivo `.env.example`:
+Si usas SQLite y el archivo no existe:
 
 ```bash
-cp .env.example .env
+touch database/database.sqlite   # Windows: New-Item database\database.sqlite
 ```
 
-Configurar las variables de conexión a PostgreSQL:
+Si prefieres PostgreSQL, ajusta `.env`:
 
 ```env
 DB_CONNECTION=pgsql
@@ -214,153 +301,77 @@ DB_USERNAME=postgres
 DB_PASSWORD=
 ```
 
-### 4. Generar la clave de aplicación
-
-```bash
-php artisan key:generate
-```
-
-### 5. Ejecutar migraciones
+Continúa con:
 
 ```bash
 php artisan migrate
+php artisan db:seed             # opcional, solo en entorno local
+npm install
+npm run dev                     # Vite (en otra terminal: php artisan serve)
 ```
 
-Si el proyecto dispone de datos iniciales:
+Alternativa única para servidor + Vite: `npm run dev:all`.
+
+Para producción: `npm run build` y sirve el proyecto con `php artisan serve` o tu servidor web habitual. La SPA estará en `http://127.0.0.1:8000`.
+
+> **Advertencia**: `database/seeders/DatabaseSeeder.php` contiene usuarios y datos de demostración con contraseñas fijas. Úsalo solo en local, cambia esas credenciales antes de exponer el entorno y no lo incluyas en commits.
+
+### Variables relevantes
+
+```env
+APP_NAME=TalentFlow
+APP_URL=http://localhost
+DB_CONNECTION=sqlite
+SANCTUM_TOKEN_EXPIRATION=1440
+SANCTUM_TOKEN_PREFIX=tf_
+SESSION_DRIVER=database
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+MAIL_MAILER=log
+```
+
+---
+
+## Calidad y tests
 
 ```bash
-php artisan db:seed
+composer lint       # Pint --test
+composer test       # php artisan test (config:clear + PHPUnit)
+npm run typecheck   # vue-tsc --noEmit
+npm run build       # Vite build
+composer quality    # los cuatro anteriores en secuencia
 ```
 
-### 6. Ejecutar el servidor
+La cobertura incluye contrato de API y envelope, autenticación y logout, aislamiento por empresa, ciclo de vida de postulaciones (incluidos retrocesos y timeline), matching ponderado y flags de postulación, dashboard, sincronización de skills/requisitos, entrevistas y feedback, y ofertas.
 
-```bash
-php artisan serve
-```
+El workflow `.github/workflows/quality.yml` ejecuta los mismos chequeos en `push` a `main` y en pull requests, con PHP 8.2 y Node 20.
 
-La aplicación estará disponible en:
+### Problemas comunes
 
-```text
-http://127.0.0.1:8000
-```
+- **Pantalla en blanco o assets 404**: ejecuta `npm install && npm run build`, o deja `npm run dev` activo durante el desarrollo.
+- **401 en la API**: el token expira a los 1440 minutos; vuelve a iniciar sesión. La SPA limpia el token y redirige a `/login`.
+- **Sin datos al iniciar**: comprueba `DB_CONNECTION` en `.env` y ejecuta `php artisan migrate` (y `db:seed` solo si es local).
+- **Error de clave**: `php artisan key:generate`.
 
 ---
 
-## 🔌 API
+## Estado actual y mejoras pendientes
 
-Talent Flow expone endpoints REST para interactuar con los principales recursos del sistema.
+Ya implementado y documentado arriba: autenticación Sanctum, dashboard, workflow de etapas y ofertas, matching con filtros, notificaciones toast y pipeline interactivo.
 
-Ejemplo de recursos:
+Pendiente o susceptible de mejora:
 
-```text
-/api/positions
-/api/candidates
-/api/applications
-/api/stages
-/api/interviews
-/api/skills
-```
-
-Las respuestas de la API utilizan formato JSON.
-
-### Ejemplo
-
-```json
-{
-    "success": true,
-    "data": []
-}
-```
+- Documentación automática de la API (OpenAPI/Swagger).
+- Autorización más granular por rol además del aislamiento empresa/global.
+- Notificaciones persistentes/backend (actualmente solo toasts en la UI; correo en modo `log`).
+- Filtros avanzados y reportes/métricas extendidas.
+- Revisión visual final en navegador de los flujos de ranking y pipeline.
 
 ---
 
-## 📮 Postman
+## Autor
 
-Las peticiones de la API pueden probarse utilizando Postman.
+**Jonathan Mendola** — Backend Developer especializado en PHP y Laravel.
 
-Si el repositorio incluye una colección, puede encontrarse dentro de:
-
-```text
-postman/
-```
-
-Configurar la URL base de la API:
-
-```text
-http://127.0.0.1:8000
-```
-
----
-
-## 🧪 Testing
-
-El proyecto puede utilizar la suite de testing de Laravel para validar el comportamiento de sus diferentes componentes.
-
-Los tests se encuentran dentro de:
-
-```text
-tests/
-```
-
-Para ejecutarlos:
-
-```bash
-php artisan test
-```
-
----
-
-## ⚠️ Problemas comunes
-
-### Error de conexión con PostgreSQL
-
-Verificar:
-
-* que PostgreSQL esté ejecutándose;
-* nombre de la base de datos;
-* usuario;
-* contraseña;
-* puerto configurado en `.env`.
-
-### Error de clave de aplicación
-
-Ejecutar:
-
-```bash
-php artisan key:generate
-```
-
-### Error de dependencias
-
-Eliminar las dependencias e instalar nuevamente:
-
-```bash
-rm -rf vendor
-composer install
-```
-
----
-
-## 🔮 Próximas mejoras
-
-Algunas funcionalidades que pueden incorporarse en futuras versiones:
-
-* Autenticación y autorización de usuarios.
-* Dashboard para seguimiento de procesos.
-* Notificaciones.
-* Filtros avanzados de candidatos.
-* Gestión de estados mediante workflows.
-* Métricas y reportes de procesos de selección.
-* Integración con servicios externos.
-* Documentación automática de la API mediante OpenAPI/Swagger.
-
----
-
-## 👨‍💻 Autor
-
-**Jonathan Mendola**
-
-Backend Developer especializado en PHP y Laravel.
-
-* GitHub: https://github.com/JonathanEme
-* Portfolio: https://jonathaneme.github.io/
+- GitHub: https://github.com/JonathanEme
+- Portfolio: https://jonathaneme.github.io/
