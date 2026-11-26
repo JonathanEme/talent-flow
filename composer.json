@@ -58,6 +58,9 @@
             "npm run typecheck",
             "npm run build"
         ],
+        "docs:generate": [
+            "@php artisan docs:openapi"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

@@ -1,0 +1,3458 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "TalentFlow API",
+        "version": "1.0.0",
+        "description": "API REST v1 del ATS TalentFlow. Generada automáticamente desde las rutas registradas."
+    },
+    "servers": [
+        {
+            "url": "http://localhost/api/v1"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Application"
+        },
+        {
+            "name": "Auth"
+        },
+        {
+            "name": "Candidate"
+        },
+        {
+            "name": "CandidateSkill"
+        },
+        {
+            "name": "Company"
+        },
+        {
+            "name": "Dashboard"
+        },
+        {
+            "name": "Interview"
+        },
+        {
+            "name": "InterviewFeedback"
+        },
+        {
+            "name": "Offer"
+        },
+        {
+            "name": "Position"
+        },
+        {
+            "name": "PositionMatching"
+        },
+        {
+            "name": "PositionRequirement"
+        },
+        {
+            "name": "Skill"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "description": "Token personal de Laravel Sanctum (prefijo tf_)."
+            }
+        },
+        "schemas": {
+            "ApiError": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    },
+                    "errors": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "paths": {
+        "/applications": {
+            "get": {
+                "tags": [
+                    "Application"
+                ],
+                "summary": "Listar — Application",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-applications",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Application"
+                ],
+                "summary": "Crear — Application",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "post-applications",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/applications/{application}": {
+            "get": {
+                "tags": [
+                    "Application"
+                ],
+                "summary": "Obtener — Application",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-applications-application",
+                "parameters": [
+                    {
+                        "name": "application",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Application.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/applications/{application}/stage": {
+            "patch": {
+                "tags": [
+                    "Application"
+                ],
+                "summary": "Cambiar etapa — Application",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "patch-applications-application-stage",
+                "parameters": [
+                    {
+                        "name": "application",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Application.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/applications/{application}/timeline": {
+            "get": {
+                "tags": [
+                    "Application"
+                ],
+                "summary": "Obtener timeline — Application",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-applications-application-timeline",
+                "parameters": [
+                    {
+                        "name": "application",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Application.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Iniciar sesión — Auth",
+                "description": "Operación de la API v1 de TalentFlow. Throttle: login.",
+                "operationId": "post-auth-login",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Cerrar sesión — Auth",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "post-auth-logout",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Obtener usuario autenticado — Auth",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-auth-me",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidates": {
+            "get": {
+                "tags": [
+                    "Candidate"
+                ],
+                "summary": "Listar — Candidate",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-candidates",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Candidate"
+                ],
+                "summary": "Crear — Candidate",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "post-candidates",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidates/{candidate}": {
+            "get": {
+                "tags": [
+                    "Candidate"
+                ],
+                "summary": "Obtener — Candidate",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-candidates-candidate",
+                "parameters": [
+                    {
+                        "name": "candidate",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Candidate.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/candidates/{candidate}/skills": {
+            "post": {
+                "tags": [
+                    "CandidateSkill"
+                ],
+                "summary": "Sincronizar — CandidateSkill",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "post-candidates-candidate-skills",
+                "parameters": [
+                    {
+                        "name": "candidate",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Candidate.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/companies": {
+            "get": {
+                "tags": [
+                    "Company"
+                ],
+                "summary": "Listar — Company",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-companies",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Company"
+                ],
+                "summary": "Crear — Company",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "post-companies",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/companies/{company}": {
+            "get": {
+                "tags": [
+                    "Company"
+                ],
+                "summary": "Obtener — Company",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-companies-company",
+                "parameters": [
+                    {
+                        "name": "company",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Company.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/dashboard": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Obtener estadísticas — Dashboard",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-dashboard",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/interviews": {
+            "get": {
+                "tags": [
+                    "Interview"
+                ],
+                "summary": "Listar — Interview",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-interviews",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Interview"
+                ],
+                "summary": "Crear — Interview",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "post-interviews",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/interviews/{interview}": {
+            "get": {
+                "tags": [
+                    "Interview"
+                ],
+                "summary": "Obtener — Interview",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-interviews-interview",
+                "parameters": [
+                    {
+                        "name": "interview",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Interview.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Interview"
+                ],
+                "summary": "Actualizar — Interview",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "put-interviews-interview",
+                "parameters": [
+                    {
+                        "name": "interview",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Interview.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Interview"
+                ],
+                "summary": "Actualizar — Interview",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "patch-interviews-interview",
+                "parameters": [
+                    {
+                        "name": "interview",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Interview.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/interviews/{interview}/feedback": {
+            "post": {
+                "tags": [
+                    "InterviewFeedback"
+                ],
+                "summary": "Crear — InterviewFeedback",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "post-interviews-interview-feedback",
+                "parameters": [
+                    {
+                        "name": "interview",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Interview.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/offers": {
+            "get": {
+                "tags": [
+                    "Offer"
+                ],
+                "summary": "Listar — Offer",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-offers",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Offer"
+                ],
+                "summary": "Crear — Offer",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "post-offers",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/offers/{offer}": {
+            "get": {
+                "tags": [
+                    "Offer"
+                ],
+                "summary": "Obtener — Offer",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-offers-offer",
+                "parameters": [
+                    {
+                        "name": "offer",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Offer.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/offers/{offer}/status": {
+            "patch": {
+                "tags": [
+                    "Offer"
+                ],
+                "summary": "Cambiar estado — Offer",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "patch-offers-offer-status",
+                "parameters": [
+                    {
+                        "name": "offer",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Offer.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/positions": {
+            "get": {
+                "tags": [
+                    "Position"
+                ],
+                "summary": "Listar — Position",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-positions",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Position"
+                ],
+                "summary": "Crear — Position",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "post-positions",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/positions/{position}": {
+            "get": {
+                "tags": [
+                    "Position"
+                ],
+                "summary": "Obtener — Position",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-positions-position",
+                "parameters": [
+                    {
+                        "name": "position",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Position.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/positions/{position}/candidates/{candidate}/match": {
+            "get": {
+                "tags": [
+                    "PositionMatching"
+                ],
+                "summary": "Comparar candidato con posición — PositionMatching",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-positions-position-candidates-candidate-match",
+                "parameters": [
+                    {
+                        "name": "position",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Position.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "candidate",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Candidate.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/positions/{position}/recommendations": {
+            "get": {
+                "tags": [
+                    "PositionMatching"
+                ],
+                "summary": "Obtener recomendaciones — PositionMatching",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-positions-position-recommendations",
+                "parameters": [
+                    {
+                        "name": "position",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Position.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/positions/{position}/requirements": {
+            "post": {
+                "tags": [
+                    "PositionRequirement"
+                ],
+                "summary": "Sincronizar — PositionRequirement",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "post-positions-position-requirements",
+                "parameters": [
+                    {
+                        "name": "position",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Position.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/skills": {
+            "get": {
+                "tags": [
+                    "Skill"
+                ],
+                "summary": "Listar — Skill",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-skills",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Skill"
+                ],
+                "summary": "Crear — Skill",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "post-skills",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    }
+}

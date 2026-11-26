@@ -85,6 +85,7 @@ talent-flow/
 │   │   ├── Middleware/              # AddApiVersionHeader
 │   │   ├── Requests/Api/V1/         # FormRequests de validación
 │   │   └── Resources/Api/V1/        # Resources de respuesta
+│   ├── Console/Commands/            # docs:openapi (generador OpenAPI)
 │   ├── Models/
 │   ├── Services/                    # ApplicationService, MatchingService
 │   ├── Support/                     # DomainValues, TenantScope
@@ -95,6 +96,7 @@ talent-flow/
 │   ├── migrations/
 │   ├── factories/
 │   └── seeders/                     # datos de demostración (ver advertencia)
+├── docs/openapi.json                # especificación generada de la API v1
 ├── resources/
 │   ├── css/app.css
 │   ├── js/
@@ -111,7 +113,8 @@ talent-flow/
 │   └── web.php                      # catch-all SPA
 ├── tests/
 │   ├── Concerns/CreatesAtsData.php
-│   └── Feature/Api/                 # contrato, auth, tenant, lifecycle, matching, calidad
+│   ├── Feature/Api/                 # contrato, auth, tenant, lifecycle, matching, calidad
+│   └── Feature/Console/             # generación de OpenAPI
 ├── .github/workflows/quality.yml
 ├── composer.json
 ├── package.json
@@ -252,6 +255,24 @@ curl -X POST http://127.0.0.1:8000/api/v1/auth/login \
 
 ---
 
+## Documentación OpenAPI
+
+La especificación de la API v1 se genera automáticamente a partir de las rutas registradas:
+
+```bash
+composer docs:generate   # equivalente a php artisan docs:openapi
+```
+
+El comando escribe `docs/openapi.json` e incluye paths, operaciones, parámetros de ruta, esquema `bearerAuth`, header `X-API-Version` y respuestas base (200/401/422/429). Para generarlo en otra ubicación:
+
+```bash
+php artisan docs:openapi --output=ruta/archivo.json
+```
+
+> La especificación describe contratos y seguridad; las respuestas usan esquemas genéricos. La visualización interactiva (Swagger UI/Redoc) sigue pendiente.
+
+---
+
 ## Rutas de la SPA
 
 `/login`, `/`, `/positions`, `/positions/create`, `/positions/:id`, `/pipeline`, `/candidates`, `/candidates/:id`, `/companies`, `/interviews`, `/offers`, `/applications/:id/timeline`.
@@ -342,7 +363,7 @@ npm run build       # Vite build
 composer quality    # los cuatro anteriores en secuencia
 ```
 
-La cobertura incluye contrato de API y envelope, autenticación y logout, aislamiento por empresa, ciclo de vida de postulaciones (incluidos retrocesos y timeline), matching ponderado y flags de postulación, dashboard, sincronización de skills/requisitos, entrevistas y feedback, y ofertas.
+La cobertura incluye contrato de API y envelope, autenticación y logout, aislamiento por empresa, ciclo de vida de postulaciones (incluidos retrocesos y timeline), matching ponderado y flags de postulación, dashboard, sincronización de skills/requisitos, entrevistas y feedback, ofertas y generación de la especificación OpenAPI.
 
 El workflow `.github/workflows/quality.yml` ejecuta los mismos chequeos en `push` a `main` y en pull requests, con PHP 8.2 y Node 20.
 
@@ -361,7 +382,7 @@ Ya implementado y documentado arriba: autenticación Sanctum, dashboard, workflo
 
 Pendiente o susceptible de mejora:
 
-- Documentación automática de la API (OpenAPI/Swagger).
+- Visualización interactiva de la especificación (Swagger UI/Redoc) sobre `docs/openapi.json`.
 - Autorización más granular por rol además del aislamiento empresa/global.
 - Notificaciones persistentes/backend (actualmente solo toasts en la UI; correo en modo `log`).
 - Filtros avanzados y reportes/métricas extendidas.
