@@ -406,11 +406,10 @@ El workflow `.github/workflows/quality.yml` ejecuta los mismos chequeos en `push
 
 ## Estado actual y mejoras pendientes
 
-Ya implementado y documentado arriba: autenticación Sanctum, autorización por roles con Gates, dashboard, workflow de etapas y ofertas, matching con filtros, notificaciones persistentes (base de datos + mail log) con inbox en la UI, pipeline interactivo, especificación OpenAPI con schemas concretos y documentación interactiva en `/api-docs`.
+Ya implementado y documentado arriba: autenticación Sanctum, autorización por roles con Gates, dashboard con KPIs y distribución por etapa/estado, filtros avanzados en listados, reportes básicos por rango de fechas, workflow de etapas y ofertas, matching con filtros, notificaciones persistentes (base de datos + mail log) con inbox en la UI, pipeline interactivo, especificación OpenAPI con schemas concretos y documentación interactiva en `/api-docs`.
 
 Pendiente o susceptible de mejora:
 
-- Filtros avanzados y reportes/métricas extendidas.
 - Revisión visual final en navegador de los flujos de ranking y pipeline.
 
 ---
