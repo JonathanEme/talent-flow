@@ -54,21 +54,21 @@ onMounted(load);
     </div>
 
     <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
-      <label class="md:col-span-2 flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2">
+      <label class="md:col-span-2 flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-sky-500">
         <Search :size="16" class="text-slate-400" />
-        <input v-model="filters.search" @keyup.enter="applyFilters" type="search" aria-label="Buscar posición" placeholder="Buscar por título, descripción o ubicación" class="bg-transparent outline-none text-sm w-full" />
+        <input v-model="filters.search" @keyup.enter="applyFilters" type="search" aria-label="Buscar posición" placeholder="Buscar por título, descripción o ubicación" class="bg-transparent outline-none text-sm w-full text-slate-700 placeholder:text-slate-400" />
       </label>
-      <select v-model="filters.status" aria-label="Filtrar por estado" class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm">
+      <select v-model="filters.status" aria-label="Filtrar por estado" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 shadow-sm focus:ring-2 focus:ring-sky-500">
         <option value="">Todos los estados</option>
         <option value="draft">Borrador</option><option value="open">Abierta</option><option value="paused">Pausada</option><option value="closed">Cerrada</option>
       </select>
       <div class="flex gap-2">
-        <select v-model="filters.seniority" aria-label="Filtrar por seniority" class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm w-full">
+        <select v-model="filters.seniority" aria-label="Filtrar por seniority" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 shadow-sm w-full focus:ring-2 focus:ring-sky-500">
           <option value="">Toda seniority</option>
           <option value="JR">JR</option><option value="SSR">SSR</option><option value="SR">SR</option><option value="LEAD">LEAD</option>
         </select>
-        <button type="button" @click="applyFilters" class="px-3 py-2 rounded-lg bg-sky-600 text-white text-sm">Filtrar</button>
-        <button type="button" @click="clearFilters" class="px-3 py-2 rounded-lg bg-slate-800 text-sm">Limpiar</button>
+        <button type="button" @click="applyFilters" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium">Filtrar</button>
+        <button type="button" @click="clearFilters" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium">Limpiar</button>
       </div>
     </div>
 

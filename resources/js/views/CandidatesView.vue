@@ -144,15 +144,15 @@ const saveCandidate = async () => {
 
     <!-- Buscador -->
     <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
-      <label class="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 md:col-span-2">
+      <label class="flex items-center gap-2 bg-white border border-slate-300 rounded-xl px-4 py-2.5 md:col-span-2 shadow-sm focus-within:ring-2 focus-within:ring-sky-500">
         <Search :size="18" class="text-slate-400" />
-        <input v-model="filters.search" @keyup.enter="handleSearch" type="search" aria-label="Buscar candidatos" placeholder="Nombre o email..." class="bg-transparent border-none outline-none text-sm text-white w-full placeholder-slate-500" />
+        <input v-model="filters.search" @keyup.enter="handleSearch" type="search" aria-label="Buscar candidatos" placeholder="Nombre o email..." class="bg-transparent border-none outline-none text-sm text-slate-700 w-full placeholder:text-slate-400" />
       </label>
-      <input v-model="filters.skill" @keyup.enter="handleSearch" type="search" aria-label="Filtrar por skill" placeholder="Skill" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm" />
+      <input v-model="filters.skill" @keyup.enter="handleSearch" type="search" aria-label="Filtrar por skill" placeholder="Skill" class="bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm focus:ring-2 focus:ring-sky-500" />
       <div class="flex gap-2">
-        <input v-model="filters.location" @keyup.enter="handleSearch" type="search" aria-label="Filtrar por ubicación" placeholder="Ubicación" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm w-full" />
-        <button type="button" @click="handleSearch" class="px-3 rounded-lg bg-sky-600 text-sm">Filtrar</button>
-        <button type="button" @click="clearFilters" class="px-3 rounded-lg bg-slate-800 text-sm">Limpiar</button>
+        <input v-model="filters.location" @keyup.enter="handleSearch" type="search" aria-label="Filtrar por ubicación" placeholder="Ubicación" class="bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm w-full focus:ring-2 focus:ring-sky-500" />
+        <button type="button" @click="handleSearch" class="px-3 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium">Filtrar</button>
+        <button type="button" @click="clearFilters" class="px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium">Limpiar</button>
       </div>
     </div>
 
