@@ -93,6 +93,7 @@ talent-flow/
 │   └── Providers/AppServiceProvider.php
 ├── bootstrap/app.php                # throttle api, versión de API, respuestas JSON
 ├── config/matching.php              # pesos y reglas del scoring
+├── config/openapi.php               # catálogo de schemas y contratos por operación
 ├── database/
 │   ├── migrations/
 │   ├── factories/
@@ -269,15 +270,15 @@ La especificación de la API v1 se genera automáticamente a partir de las rutas
 composer docs:generate   # equivalente a php artisan docs:openapi
 ```
 
-El comando escribe `docs/openapi.json` e incluye paths, operaciones, parámetros de ruta, esquema `bearerAuth`, header `X-API-Version` y respuestas base (200/401/422/429). Para generarlo en otra ubicación:
+El comando escribe `docs/openapi.json` e incluye paths, operaciones, parámetros de ruta y query, esquemas concretos de request/response, esquema `bearerAuth`, header `X-API-Version` y respuestas 200/201/401/403/404/422/429. El catálogo de esquemas y el mapeo operación → esquema viven en `config/openapi.php`. Para generarlo en otra ubicación:
 
 ```bash
 php artisan docs:openapi --output=ruta/archivo.json
 ```
 
-La documentación interactiva está disponible en **`/api-docs`**: una vista Blade carga Redoc de forma local (sin CDN) desde el bundle `redoc.standalone.js` copiado por Vite y consume la especificación servida en **`/api-docs.json`**.
+Los esquemas cubren FormRequests, Resources y envelopes reales de la API: `data` para recursos individuales, `Paginated*Schema` para listados, `MessageAnd*ResponseSchema` para respuestas con mensaje, timeline con discriminador por `type`, comparación de match, recomendaciones y dashboard.
 
-> La especificación describe contratos y seguridad; las respuestas usan esquemas genéricos. Definir schemas concretos de request/response es una mejora pendiente.
+La documentación interactiva está disponible en **`/api-docs`**: una vista Blade carga Redoc de forma local (sin CDN) desde el bundle `redoc.standalone.js` copiado por Vite y consume la especificación servida en **`/api-docs.json`**.
 
 ---
 
@@ -388,11 +389,10 @@ El workflow `.github/workflows/quality.yml` ejecuta los mismos chequeos en `push
 
 ## Estado actual y mejoras pendientes
 
-Ya implementado y documentado arriba: autenticación Sanctum, dashboard, workflow de etapas y ofertas, matching con filtros, notificaciones toast, pipeline interactivo, especificación OpenAPI generada y documentación interactiva en `/api-docs`.
+Ya implementado y documentado arriba: autenticación Sanctum, dashboard, workflow de etapas y ofertas, matching con filtros, notificaciones toast, pipeline interactivo, especificación OpenAPI con schemas concretos y documentación interactiva en `/api-docs`.
 
 Pendiente o susceptible de mejora:
 
-- Schemas concretos de request/response en OpenAPI (actualmente son genéricos).
 - Autorización más granular por rol además del aislamiento empresa/global.
 - Notificaciones persistentes/backend (actualmente solo toasts en la UI; correo en modo `log`).
 - Filtros avanzados y reportes/métricas extendidas.

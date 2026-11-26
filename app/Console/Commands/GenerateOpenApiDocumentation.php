@@ -88,21 +88,7 @@ class GenerateOpenApiDocumentation extends Command
                         'description' => 'Token personal de Laravel Sanctum (prefijo tf_).',
                     ],
                 ],
-                'schemas' => [
-                    'ApiError' => [
-                        'type' => 'object',
-                        'properties' => [
-                            'message' => ['type' => 'string'],
-                            'errors' => [
-                                'type' => 'object',
-                                'additionalProperties' => [
-                                    'type' => 'array',
-                                    'items' => ['type' => 'string'],
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
+                'schemas' => $this->schemas(),
             ],
             'paths' => $paths,
         ];
@@ -111,15 +97,21 @@ class GenerateOpenApiDocumentation extends Command
     private function buildOperation(RoutingRoute $route, string $method, string $path): array
     {
         $protected = in_array('auth:sanctum', $route->gatherMiddleware(), true);
+        $operationConfig = $this->operationConfig($method, $path);
 
         $operation = [
             'tags' => [$this->tag($route)],
             'summary' => $this->summary($route),
             'description' => $this->description($route, $protected),
             'operationId' => $this->operationId($method, $path),
-            'parameters' => $this->parameters($path),
-            'responses' => $this->responses($protected),
+            'parameters' => $this->parameters($path, $operationConfig),
         ];
+
+        if (isset($operationConfig['request'])) {
+            $operation['requestBody'] = $this->requestBody($operationConfig['request']);
+        }
+
+        $operation['responses'] = $this->responses($protected, $operationConfig);
 
         if ($protected) {
             $operation['security'] = [['bearerAuth' => []]];
@@ -190,11 +182,11 @@ class GenerateOpenApiDocumentation extends Command
         return Str::slug($method.' '.str_replace(['/', '{', '}'], [' ', '', ''], $path));
     }
 
-    private function parameters(string $path): array
+    private function parameters(string $path, array $operationConfig): array
     {
         preg_match_all('/\{([^}]+)\}/', $path, $matches);
 
-        return array_map(function (string $parameter): array {
+        $parameters = array_map(function (string $parameter): array {
             $optional = Str::endsWith($parameter, '?');
             $name = $optional ? Str::beforeLast($parameter, '?') : $parameter;
 
@@ -206,24 +198,76 @@ class GenerateOpenApiDocumentation extends Command
                 'schema' => ['type' => 'integer', 'format' => 'int64'],
             ];
         }, $matches[1]);
+
+        if (isset($operationConfig['query'])) {
+            $parameters = array_merge($parameters, $this->queryParameters($operationConfig['query']));
+        }
+
+        return $parameters;
     }
 
-    private function responses(bool $protected): array
+    private function queryParameters(string $schemaName): array
     {
-        $error = ['$ref' => '#/components/schemas/ApiError'];
+        $schema = config('openapi.schemas.'.$schemaName, []);
+        $required = $schema['required'] ?? [];
+        $parameters = [];
+
+        foreach ($schema['properties'] ?? [] as $name => $property) {
+            $parameter = [
+                'name' => $name,
+                'in' => 'query',
+                'required' => in_array($name, $required, true),
+                'schema' => $property,
+            ];
+
+            if (isset($property['description'])) {
+                $parameter['description'] = $property['description'];
+            }
+
+            $parameters[] = $parameter;
+        }
+
+        return $parameters;
+    }
+
+    private function requestBody(string $schemaName): array
+    {
+        return [
+            'required' => true,
+            'content' => [
+                'application/json' => [
+                    'schema' => $this->schemaRef($schemaName),
+                ],
+            ],
+        ];
+    }
+
+    private function responses(bool $protected, array $operationConfig): array
+    {
+        $error = $this->schemaRef('ApiError');
+        $status = (string) ($operationConfig['status'] ?? 200);
 
         $responses = [
-            '200' => $this->response('Operación completada correctamente.', [
-                'type' => 'object',
-                'additionalProperties' => true,
-            ]),
-            '422' => $this->response('Validación fallida o transición no permitida.', $error),
-            '429' => $this->response('Límite de peticiones excedido.', $error),
+            $status => $this->response(
+                $status === '201' ? 'Recurso creado correctamente.' : 'Operación completada correctamente.',
+                $this->schemaRef($operationConfig['response'] ?? 'MessageSchema')
+            ),
         ];
 
         if ($protected) {
             $responses['401'] = $this->response('Token ausente, inválido o expirado.', $error);
         }
+
+        if (! empty($operationConfig['forbidden'])) {
+            $responses['403'] = $this->response('El usuario no tiene permisos para esta operación.', $error);
+        }
+
+        if (! empty($operationConfig['not_found'])) {
+            $responses['404'] = $this->response('Recurso no encontrado o fuera del alcance de la empresa activa.', $error);
+        }
+
+        $responses['422'] = $this->response('Validación fallida o transición no permitida.', $error);
+        $responses['429'] = $this->response('Límite de peticiones excedido.', $error);
 
         ksort($responses, SORT_NUMERIC);
 
@@ -244,6 +288,73 @@ class GenerateOpenApiDocumentation extends Command
                 'application/json' => ['schema' => $schema],
             ],
         ];
+    }
+
+    private function schemas(): array
+    {
+        $schemas = array_merge(config('openapi.schemas', []), $this->envelopeSchemas());
+        ksort($schemas);
+
+        return $schemas;
+    }
+
+    private function envelopeSchemas(): array
+    {
+        $schemas = [];
+
+        foreach (config('openapi.resources', []) as $name => $resourceSchema) {
+            $resource = $this->schemaRef($resourceSchema);
+
+            $schemas['Data'.$name.'Schema'] = [
+                'type' => 'object',
+                'required' => ['data'],
+                'properties' => [
+                    'data' => $resource,
+                ],
+            ];
+
+            $schemas['Paginated'.$name.'Schema'] = [
+                'type' => 'object',
+                'required' => ['data'],
+                'properties' => [
+                    'data' => [
+                        'type' => 'object',
+                        'required' => ['data', 'links', 'meta'],
+                        'properties' => [
+                            'data' => [
+                                'type' => 'array',
+                                'items' => $resource,
+                            ],
+                            'links' => $this->schemaRef('PaginationLinksSchema'),
+                            'meta' => $this->schemaRef('PaginationMetaSchema'),
+                        ],
+                    ],
+                ],
+            ];
+
+            $schemas['MessageAnd'.$name.'ResponseSchema'] = [
+                'type' => 'object',
+                'required' => ['message', 'data'],
+                'properties' => [
+                    'message' => ['type' => 'string'],
+                    'data' => $resource,
+                ],
+            ];
+        }
+
+        return $schemas;
+    }
+
+    private function schemaRef(string $schemaName): array
+    {
+        return ['$ref' => '#/components/schemas/'.$schemaName];
+    }
+
+    private function operationConfig(string $method, string $path): array
+    {
+        $operations = config('openapi.operations', []);
+
+        return $operations[$method.' '.$path] ?? [];
     }
 
     private function countOperations(array $specification): int

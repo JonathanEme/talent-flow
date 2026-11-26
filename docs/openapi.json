@@ -62,18 +62,2330 @@
         "schemas": {
             "ApiError": {
                 "type": "object",
+                "required": [
+                    "message"
+                ],
                 "properties": {
                     "message": {
                         "type": "string"
                     },
                     "errors": {
                         "type": "object",
+                        "nullable": true,
                         "additionalProperties": {
                             "type": "array",
                             "items": {
                                 "type": "string"
                             }
                         }
+                    }
+                }
+            },
+            "ApplicationIndexQuerySchema": {
+                "type": "object",
+                "properties": {
+                    "position_id": {
+                        "type": "integer"
+                    },
+                    "stage": {
+                        "type": "string",
+                        "enum": [
+                            "new",
+                            "screening",
+                            "technical_interview",
+                            "final_interview",
+                            "offer",
+                            "hired",
+                            "rejected"
+                        ]
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "active",
+                            "hired",
+                            "rejected"
+                        ]
+                    }
+                }
+            },
+            "ApplicationResourceSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "stage",
+                    "status"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "stage": {
+                        "type": "string",
+                        "enum": [
+                            "new",
+                            "screening",
+                            "technical_interview",
+                            "final_interview",
+                            "offer",
+                            "hired",
+                            "rejected"
+                        ]
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "active",
+                            "hired",
+                            "rejected"
+                        ]
+                    },
+                    "candidate": {
+                        "$ref": "#/components/schemas/CandidateResourceSchema"
+                    },
+                    "position": {
+                        "$ref": "#/components/schemas/PositionResourceSchema"
+                    },
+                    "interviews": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/InterviewResourceSchema"
+                        }
+                    },
+                    "offers": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/OfferResourceSchema"
+                        }
+                    },
+                    "stageLogs": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ApplicationStageLogResourceSchema"
+                        }
+                    }
+                }
+            },
+            "ApplicationStageLogResourceSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "from_stage",
+                    "to_stage",
+                    "changed_at"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "from_stage": {
+                        "type": "string",
+                        "enum": [
+                            "new",
+                            "screening",
+                            "technical_interview",
+                            "final_interview",
+                            "offer",
+                            "hired",
+                            "rejected"
+                        ],
+                        "nullable": true
+                    },
+                    "to_stage": {
+                        "type": "string",
+                        "enum": [
+                            "new",
+                            "screening",
+                            "technical_interview",
+                            "final_interview",
+                            "offer",
+                            "hired",
+                            "rejected"
+                        ]
+                    },
+                    "changed_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "changedBy": {
+                        "$ref": "#/components/schemas/UserResourceSchema"
+                    }
+                }
+            },
+            "ApplicationStoreRequestSchema": {
+                "type": "object",
+                "required": [
+                    "candidate_id",
+                    "position_id"
+                ],
+                "properties": {
+                    "candidate_id": {
+                        "type": "integer",
+                        "description": "ID de candidato existente en la empresa activa."
+                    },
+                    "position_id": {
+                        "type": "integer",
+                        "description": "ID de posición existente en la empresa activa."
+                    }
+                }
+            },
+            "CandidateIndexQuerySchema": {
+                "type": "object",
+                "properties": {
+                    "search": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "skill": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "location": {
+                        "type": "string",
+                        "maxLength": 255
+                    }
+                }
+            },
+            "CandidateResourceSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "full_name",
+                    "email"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "full_name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "phone": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "location": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "resume_summary": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "years_experience": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "desired_role": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "skills": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SkillResourceSchema"
+                        }
+                    }
+                }
+            },
+            "CandidateSkillItemSchema": {
+                "type": "object",
+                "required": [
+                    "skill_id",
+                    "level"
+                ],
+                "properties": {
+                    "skill_id": {
+                        "type": "integer"
+                    },
+                    "level": {
+                        "type": "string",
+                        "enum": [
+                            "beginner",
+                            "intermediate",
+                            "advanced",
+                            "expert"
+                        ]
+                    },
+                    "years_experience": {
+                        "type": "integer",
+                        "nullable": true,
+                        "minimum": 0
+                    }
+                }
+            },
+            "CandidateStoreRequestSchema": {
+                "type": "object",
+                "required": [
+                    "full_name",
+                    "email"
+                ],
+                "properties": {
+                    "full_name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255
+                    },
+                    "phone": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 50
+                    },
+                    "location": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 255
+                    },
+                    "resume_summary": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "years_experience": {
+                        "type": "integer",
+                        "nullable": true,
+                        "minimum": 0
+                    },
+                    "desired_role": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 255
+                    }
+                }
+            },
+            "CompanyResourceSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "slug"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "slug": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CompanyStoreRequestSchema": {
+                "type": "object",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    }
+                }
+            },
+            "DashboardKpisSchema": {
+                "type": "object",
+                "required": [
+                    "active_positions",
+                    "total_candidates",
+                    "active_applications",
+                    "scheduled_interviews",
+                    "open_offers"
+                ],
+                "properties": {
+                    "active_positions": {
+                        "type": "integer"
+                    },
+                    "total_candidates": {
+                        "type": "integer"
+                    },
+                    "active_applications": {
+                        "type": "integer"
+                    },
+                    "scheduled_interviews": {
+                        "type": "integer"
+                    },
+                    "open_offers": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "DashboardSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "kpis",
+                            "stage_distribution",
+                            "top_skills",
+                            "recent_applications"
+                        ],
+                        "properties": {
+                            "kpis": {
+                                "$ref": "#/components/schemas/DashboardKpisSchema"
+                            },
+                            "stage_distribution": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/StageDistributionSchema"
+                                }
+                            },
+                            "top_skills": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/SkillResourceSchema"
+                                }
+                            },
+                            "recent_applications": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/ApplicationResourceSchema"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "DataApplicationSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/ApplicationResourceSchema"
+                    }
+                }
+            },
+            "DataCandidateSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/CandidateResourceSchema"
+                    }
+                }
+            },
+            "DataCompanySchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/CompanyResourceSchema"
+                    }
+                }
+            },
+            "DataInterviewFeedbackSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/InterviewFeedbackResourceSchema"
+                    }
+                }
+            },
+            "DataInterviewSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/InterviewResourceSchema"
+                    }
+                }
+            },
+            "DataOfferSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/OfferResourceSchema"
+                    }
+                }
+            },
+            "DataPositionSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/PositionResourceSchema"
+                    }
+                }
+            },
+            "DataSkillSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/SkillResourceSchema"
+                    }
+                }
+            },
+            "DataUserSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/UserResourceSchema"
+                    }
+                }
+            },
+            "InterviewFeedbackResourceSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "score",
+                    "comments",
+                    "recommendation"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "score": {
+                        "type": "number"
+                    },
+                    "comments": {
+                        "type": "string"
+                    },
+                    "recommendation": {
+                        "type": "string",
+                        "enum": [
+                            "approved",
+                            "rejected",
+                            "on_hold"
+                        ]
+                    },
+                    "interviewer": {
+                        "$ref": "#/components/schemas/UserResourceSchema"
+                    }
+                }
+            },
+            "InterviewFeedbackStoreRequestSchema": {
+                "type": "object",
+                "required": [
+                    "score",
+                    "comments",
+                    "recommendation"
+                ],
+                "properties": {
+                    "score": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 10
+                    },
+                    "comments": {
+                        "type": "string"
+                    },
+                    "recommendation": {
+                        "type": "string",
+                        "enum": [
+                            "approved",
+                            "rejected",
+                            "on_hold"
+                        ]
+                    }
+                }
+            },
+            "InterviewIndexQuerySchema": {
+                "type": "object",
+                "properties": {
+                    "application_id": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "screening",
+                            "hr",
+                            "technical",
+                            "client",
+                            "final"
+                        ]
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "scheduled",
+                            "completed",
+                            "canceled",
+                            "no_show"
+                        ]
+                    },
+                    "from": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "to": {
+                        "type": "string",
+                        "format": "date"
+                    }
+                }
+            },
+            "InterviewResourceSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "type",
+                    "scheduled_at",
+                    "duration_minutes",
+                    "status"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "screening",
+                            "hr",
+                            "technical",
+                            "client",
+                            "final"
+                        ]
+                    },
+                    "scheduled_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "duration_minutes": {
+                        "type": "integer"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "scheduled",
+                            "completed",
+                            "canceled",
+                            "no_show"
+                        ]
+                    },
+                    "location": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "notes": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "application": {
+                        "$ref": "#/components/schemas/ApplicationResourceSchema"
+                    },
+                    "interviewer": {
+                        "$ref": "#/components/schemas/UserResourceSchema"
+                    },
+                    "feedback": {
+                        "$ref": "#/components/schemas/InterviewFeedbackResourceSchema"
+                    }
+                }
+            },
+            "InterviewStoreRequestSchema": {
+                "type": "object",
+                "required": [
+                    "application_id",
+                    "type",
+                    "scheduled_at",
+                    "duration_minutes"
+                ],
+                "properties": {
+                    "application_id": {
+                        "type": "integer",
+                        "description": "ID de aplicación existente en la empresa activa."
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "screening",
+                            "hr",
+                            "technical",
+                            "client",
+                            "final"
+                        ]
+                    },
+                    "scheduled_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "duration_minutes": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "location": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 255
+                    },
+                    "notes": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                }
+            },
+            "InterviewUpdateRequestSchema": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "screening",
+                            "hr",
+                            "technical",
+                            "client",
+                            "final"
+                        ]
+                    },
+                    "scheduled_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "duration_minutes": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "scheduled",
+                            "completed",
+                            "canceled",
+                            "no_show"
+                        ]
+                    },
+                    "location": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 255
+                    },
+                    "notes": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                }
+            },
+            "LoginRequestSchema": {
+                "type": "object",
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255
+                    },
+                    "password": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                }
+            },
+            "LoginResponseSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "user",
+                            "token",
+                            "token_type"
+                        ],
+                        "properties": {
+                            "user": {
+                                "$ref": "#/components/schemas/UserResourceSchema"
+                            },
+                            "token": {
+                                "type": "string"
+                            },
+                            "token_type": {
+                                "type": "string",
+                                "enum": [
+                                    "Bearer"
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            "MatchDetailSchema": {
+                "type": "object",
+                "properties": {
+                    "skills": {
+                        "$ref": "#/components/schemas/MatchFactorSchema"
+                    },
+                    "seniority": {
+                        "$ref": "#/components/schemas/MatchFactorSchema"
+                    },
+                    "location": {
+                        "$ref": "#/components/schemas/MatchFactorSchema"
+                    },
+                    "experience": {
+                        "$ref": "#/components/schemas/MatchFactorSchema"
+                    }
+                }
+            },
+            "MatchFactorSchema": {
+                "type": "object",
+                "required": [
+                    "key",
+                    "label",
+                    "score",
+                    "weight",
+                    "reason"
+                ],
+                "properties": {
+                    "key": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "score": {
+                        "type": "number"
+                    },
+                    "weight": {
+                        "type": "number"
+                    },
+                    "reason": {
+                        "type": "string"
+                    }
+                }
+            },
+            "MatchResponseSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/MatchSchema"
+                    }
+                }
+            },
+            "MatchSchema": {
+                "type": "object",
+                "required": [
+                    "score",
+                    "recommendation"
+                ],
+                "properties": {
+                    "score": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                    },
+                    "recommendation": {
+                        "type": "string",
+                        "enum": [
+                            "approved",
+                            "rejected",
+                            "on_hold"
+                        ]
+                    },
+                    "candidate": {
+                        "$ref": "#/components/schemas/CandidateResourceSchema"
+                    },
+                    "position": {
+                        "$ref": "#/components/schemas/PositionResourceSchema"
+                    },
+                    "matched_skills": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SkillResourceSchema"
+                        }
+                    },
+                    "missing_skills": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SkillResourceSchema"
+                        }
+                    },
+                    "details": {
+                        "$ref": "#/components/schemas/MatchDetailSchema"
+                    }
+                }
+            },
+            "MeResponseSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/UserResourceSchema"
+                    }
+                }
+            },
+            "MessageAndApplicationResponseSchema": {
+                "type": "object",
+                "required": [
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/ApplicationResourceSchema"
+                    }
+                }
+            },
+            "MessageAndCandidateResponseSchema": {
+                "type": "object",
+                "required": [
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/CandidateResourceSchema"
+                    }
+                }
+            },
+            "MessageAndCompanyResponseSchema": {
+                "type": "object",
+                "required": [
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/CompanyResourceSchema"
+                    }
+                }
+            },
+            "MessageAndInterviewFeedbackResponseSchema": {
+                "type": "object",
+                "required": [
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/InterviewFeedbackResourceSchema"
+                    }
+                }
+            },
+            "MessageAndInterviewResponseSchema": {
+                "type": "object",
+                "required": [
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/InterviewResourceSchema"
+                    }
+                }
+            },
+            "MessageAndOfferResponseSchema": {
+                "type": "object",
+                "required": [
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/OfferResourceSchema"
+                    }
+                }
+            },
+            "MessageAndPositionResponseSchema": {
+                "type": "object",
+                "required": [
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/PositionResourceSchema"
+                    }
+                }
+            },
+            "MessageAndSkillResponseSchema": {
+                "type": "object",
+                "required": [
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/SkillResourceSchema"
+                    }
+                }
+            },
+            "MessageAndUserResponseSchema": {
+                "type": "object",
+                "required": [
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/UserResourceSchema"
+                    }
+                }
+            },
+            "MessageSchema": {
+                "type": "object",
+                "required": [
+                    "message"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    }
+                }
+            },
+            "OfferIndexQuerySchema": {
+                "type": "object",
+                "properties": {
+                    "application_id": {
+                        "type": "integer"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "draft",
+                            "sent",
+                            "accepted",
+                            "declined"
+                        ]
+                    }
+                }
+            },
+            "OfferResourceSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "salary",
+                    "currency",
+                    "start_date",
+                    "status"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "salary": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string",
+                        "enum": [
+                            "USD",
+                            "EUR",
+                            "ARS"
+                        ]
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "draft",
+                            "sent",
+                            "accepted",
+                            "declined"
+                        ]
+                    },
+                    "notes": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "decline_reason": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "application": {
+                        "$ref": "#/components/schemas/ApplicationResourceSchema"
+                    }
+                }
+            },
+            "OfferStoreRequestSchema": {
+                "type": "object",
+                "required": [
+                    "application_id",
+                    "salary",
+                    "currency",
+                    "start_date"
+                ],
+                "properties": {
+                    "application_id": {
+                        "type": "integer",
+                        "description": "ID de aplicación existente en la empresa activa."
+                    },
+                    "salary": {
+                        "oneOf": [
+                            {
+                                "type": "number"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ],
+                        "description": "Monto ofrecido; debe ser numérico o string numérico."
+                    },
+                    "currency": {
+                        "type": "string",
+                        "enum": [
+                            "USD",
+                            "EUR",
+                            "ARS"
+                        ]
+                    },
+                    "start_date": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "notes": {
+                        "type": "string",
+                        "nullable": true
+                    }
+                }
+            },
+            "OfferUpdateStatusRequestSchema": {
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "required": [
+                            "status"
+                        ],
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "sent",
+                                    "accepted"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "type": "object",
+                        "required": [
+                            "status",
+                            "decline_reason"
+                        ],
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "enum": [
+                                    "declined"
+                                ]
+                            },
+                            "decline_reason": {
+                                "type": "string",
+                                "maxLength": 2000
+                            }
+                        }
+                    }
+                ]
+            },
+            "PaginatedApplicationSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "data",
+                            "links",
+                            "meta"
+                        ],
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/ApplicationResourceSchema"
+                                }
+                            },
+                            "links": {
+                                "$ref": "#/components/schemas/PaginationLinksSchema"
+                            },
+                            "meta": {
+                                "$ref": "#/components/schemas/PaginationMetaSchema"
+                            }
+                        }
+                    }
+                }
+            },
+            "PaginatedCandidateSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "data",
+                            "links",
+                            "meta"
+                        ],
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/CandidateResourceSchema"
+                                }
+                            },
+                            "links": {
+                                "$ref": "#/components/schemas/PaginationLinksSchema"
+                            },
+                            "meta": {
+                                "$ref": "#/components/schemas/PaginationMetaSchema"
+                            }
+                        }
+                    }
+                }
+            },
+            "PaginatedCompanySchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "data",
+                            "links",
+                            "meta"
+                        ],
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/CompanyResourceSchema"
+                                }
+                            },
+                            "links": {
+                                "$ref": "#/components/schemas/PaginationLinksSchema"
+                            },
+                            "meta": {
+                                "$ref": "#/components/schemas/PaginationMetaSchema"
+                            }
+                        }
+                    }
+                }
+            },
+            "PaginatedInterviewFeedbackSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "data",
+                            "links",
+                            "meta"
+                        ],
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/InterviewFeedbackResourceSchema"
+                                }
+                            },
+                            "links": {
+                                "$ref": "#/components/schemas/PaginationLinksSchema"
+                            },
+                            "meta": {
+                                "$ref": "#/components/schemas/PaginationMetaSchema"
+                            }
+                        }
+                    }
+                }
+            },
+            "PaginatedInterviewSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "data",
+                            "links",
+                            "meta"
+                        ],
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/InterviewResourceSchema"
+                                }
+                            },
+                            "links": {
+                                "$ref": "#/components/schemas/PaginationLinksSchema"
+                            },
+                            "meta": {
+                                "$ref": "#/components/schemas/PaginationMetaSchema"
+                            }
+                        }
+                    }
+                }
+            },
+            "PaginatedOfferSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "data",
+                            "links",
+                            "meta"
+                        ],
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/OfferResourceSchema"
+                                }
+                            },
+                            "links": {
+                                "$ref": "#/components/schemas/PaginationLinksSchema"
+                            },
+                            "meta": {
+                                "$ref": "#/components/schemas/PaginationMetaSchema"
+                            }
+                        }
+                    }
+                }
+            },
+            "PaginatedPositionSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "data",
+                            "links",
+                            "meta"
+                        ],
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/PositionResourceSchema"
+                                }
+                            },
+                            "links": {
+                                "$ref": "#/components/schemas/PaginationLinksSchema"
+                            },
+                            "meta": {
+                                "$ref": "#/components/schemas/PaginationMetaSchema"
+                            }
+                        }
+                    }
+                }
+            },
+            "PaginatedSkillSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "data",
+                            "links",
+                            "meta"
+                        ],
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/SkillResourceSchema"
+                                }
+                            },
+                            "links": {
+                                "$ref": "#/components/schemas/PaginationLinksSchema"
+                            },
+                            "meta": {
+                                "$ref": "#/components/schemas/PaginationMetaSchema"
+                            }
+                        }
+                    }
+                }
+            },
+            "PaginatedUserSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "data",
+                            "links",
+                            "meta"
+                        ],
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/UserResourceSchema"
+                                }
+                            },
+                            "links": {
+                                "$ref": "#/components/schemas/PaginationLinksSchema"
+                            },
+                            "meta": {
+                                "$ref": "#/components/schemas/PaginationMetaSchema"
+                            }
+                        }
+                    }
+                }
+            },
+            "PaginationLinksSchema": {
+                "type": "object",
+                "required": [
+                    "first",
+                    "last",
+                    "prev",
+                    "next"
+                ],
+                "properties": {
+                    "first": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri"
+                    },
+                    "last": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri"
+                    },
+                    "prev": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri"
+                    },
+                    "next": {
+                        "type": "string",
+                        "nullable": true,
+                        "format": "uri"
+                    }
+                }
+            },
+            "PaginationMetaSchema": {
+                "type": "object",
+                "required": [
+                    "current_page",
+                    "from",
+                    "last_page",
+                    "links",
+                    "per_page",
+                    "to",
+                    "total"
+                ],
+                "properties": {
+                    "current_page": {
+                        "type": "integer"
+                    },
+                    "from": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "last_page": {
+                        "type": "integer"
+                    },
+                    "links": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "url",
+                                "label",
+                                "active"
+                            ],
+                            "properties": {
+                                "url": {
+                                    "type": "string",
+                                    "nullable": true
+                                },
+                                "label": {
+                                    "type": "string"
+                                },
+                                "active": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    },
+                    "per_page": {
+                        "type": "integer"
+                    },
+                    "to": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "total": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "PositionIndexQuerySchema": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "draft",
+                            "open",
+                            "paused",
+                            "closed"
+                        ]
+                    },
+                    "seniority": {
+                        "type": "string",
+                        "enum": [
+                            "JR",
+                            "SSR",
+                            "SR",
+                            "LEAD",
+                            "junior",
+                            "semi_senior",
+                            "senior",
+                            "lead"
+                        ]
+                    },
+                    "search": {
+                        "type": "string",
+                        "maxLength": 255
+                    }
+                }
+            },
+            "PositionRecommendationsQuerySchema": {
+                "type": "object",
+                "properties": {
+                    "limit": {
+                        "type": "integer",
+                        "default": 10,
+                        "minimum": 1,
+                        "maximum": 100
+                    }
+                }
+            },
+            "PositionRequirementItemSchema": {
+                "type": "object",
+                "required": [
+                    "skill_id",
+                    "required_level",
+                    "priority"
+                ],
+                "properties": {
+                    "skill_id": {
+                        "type": "integer"
+                    },
+                    "required_level": {
+                        "type": "string",
+                        "enum": [
+                            "beginner",
+                            "intermediate",
+                            "advanced",
+                            "expert"
+                        ]
+                    },
+                    "priority": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "PositionResourceSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "title",
+                    "description",
+                    "status",
+                    "seniority",
+                    "location",
+                    "modality",
+                    "employment_type"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "draft",
+                            "open",
+                            "paused",
+                            "closed"
+                        ]
+                    },
+                    "seniority": {
+                        "type": "string",
+                        "enum": [
+                            "JR",
+                            "SSR",
+                            "SR",
+                            "LEAD",
+                            "junior",
+                            "semi_senior",
+                            "senior",
+                            "lead"
+                        ]
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "modality": {
+                        "type": "string",
+                        "enum": [
+                            "remote",
+                            "hybrid",
+                            "on_site"
+                        ]
+                    },
+                    "employment_type": {
+                        "type": "string",
+                        "enum": [
+                            "full-time",
+                            "full_time",
+                            "part-time",
+                            "part_time",
+                            "contract",
+                            "internship"
+                        ]
+                    },
+                    "salary_min": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "salary_max": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "currency": {
+                        "type": "string",
+                        "enum": [
+                            "USD",
+                            "EUR",
+                            "ARS"
+                        ],
+                        "nullable": true
+                    },
+                    "company": {
+                        "$ref": "#/components/schemas/CompanyResourceSchema"
+                    },
+                    "skills": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SkillResourceSchema"
+                        }
+                    }
+                }
+            },
+            "PositionStoreRequestSchema": {
+                "type": "object",
+                "required": [
+                    "company_id",
+                    "title",
+                    "description",
+                    "status",
+                    "seniority",
+                    "location",
+                    "modality",
+                    "employment_type"
+                ],
+                "properties": {
+                    "company_id": {
+                        "type": "integer",
+                        "description": "ID de empresa existente."
+                    },
+                    "title": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "draft",
+                            "open",
+                            "paused",
+                            "closed"
+                        ]
+                    },
+                    "seniority": {
+                        "type": "string",
+                        "enum": [
+                            "JR",
+                            "SSR",
+                            "SR",
+                            "LEAD",
+                            "junior",
+                            "semi_senior",
+                            "senior",
+                            "lead"
+                        ]
+                    },
+                    "location": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "modality": {
+                        "type": "string",
+                        "enum": [
+                            "remote",
+                            "hybrid",
+                            "on_site"
+                        ]
+                    },
+                    "employment_type": {
+                        "type": "string",
+                        "enum": [
+                            "full-time",
+                            "full_time",
+                            "part-time",
+                            "part_time",
+                            "contract",
+                            "internship"
+                        ]
+                    },
+                    "salary_min": {
+                        "oneOf": [
+                            {
+                                "type": "number",
+                                "nullable": true
+                            },
+                            {
+                                "type": "string",
+                                "nullable": true
+                            }
+                        ]
+                    },
+                    "salary_max": {
+                        "oneOf": [
+                            {
+                                "type": "number",
+                                "nullable": true
+                            },
+                            {
+                                "type": "string",
+                                "nullable": true
+                            }
+                        ]
+                    },
+                    "currency": {
+                        "type": "string",
+                        "enum": [
+                            "USD",
+                            "EUR",
+                            "ARS"
+                        ],
+                        "nullable": true
+                    }
+                }
+            },
+            "RecommendationsResponseSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "position",
+                            "data"
+                        ],
+                        "properties": {
+                            "position": {
+                                "$ref": "#/components/schemas/PositionResourceSchema"
+                            },
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/MatchSchema"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "SkillIndexQuerySchema": {
+                "type": "object",
+                "properties": {
+                    "category": {
+                        "type": "string",
+                        "enum": [
+                            "technical",
+                            "soft_skill",
+                            "language",
+                            "tool"
+                        ]
+                    },
+                    "search": {
+                        "type": "string",
+                        "maxLength": 255
+                    }
+                }
+            },
+            "SkillPivotSchema": {
+                "type": "object",
+                "properties": {
+                    "level": {
+                        "type": "string",
+                        "enum": [
+                            "beginner",
+                            "intermediate",
+                            "advanced",
+                            "expert"
+                        ]
+                    },
+                    "required_level": {
+                        "type": "string",
+                        "enum": [
+                            "beginner",
+                            "intermediate",
+                            "advanced",
+                            "expert"
+                        ]
+                    },
+                    "years_experience": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "priority": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "SkillResourceSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "category"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "type": "string",
+                        "enum": [
+                            "technical",
+                            "soft_skill",
+                            "language",
+                            "tool"
+                        ]
+                    },
+                    "pivot": {
+                        "$ref": "#/components/schemas/SkillPivotSchema"
+                    }
+                }
+            },
+            "SkillStoreRequestSchema": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "category"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "category": {
+                        "type": "string",
+                        "enum": [
+                            "technical",
+                            "soft_skill",
+                            "language",
+                            "tool"
+                        ]
+                    }
+                }
+            },
+            "StageDistributionSchema": {
+                "type": "object",
+                "required": [
+                    "stage",
+                    "label",
+                    "total"
+                ],
+                "properties": {
+                    "stage": {
+                        "type": "string",
+                        "enum": [
+                            "new",
+                            "screening",
+                            "technical_interview",
+                            "final_interview",
+                            "offer",
+                            "hired",
+                            "rejected"
+                        ]
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "total": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "SyncCandidateSkillsRequestSchema": {
+                "type": "object",
+                "required": [
+                    "skills"
+                ],
+                "properties": {
+                    "skills": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CandidateSkillItemSchema"
+                        },
+                        "uniqueItems": true
+                    }
+                }
+            },
+            "SyncPositionRequirementsRequestSchema": {
+                "type": "object",
+                "required": [
+                    "skills"
+                ],
+                "properties": {
+                    "skills": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PositionRequirementItemSchema"
+                        },
+                        "uniqueItems": true
+                    }
+                }
+            },
+            "TimelineEventSchema": {
+                "oneOf": [
+                    {
+                        "$ref": "#/components/schemas/TimelineStageEventSchema"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TimelineInterviewEventSchema"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TimelineFeedbackEventSchema"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TimelineOfferEventSchema"
+                    },
+                    {
+                        "$ref": "#/components/schemas/TimelineNoteEventSchema"
+                    }
+                ],
+                "discriminator": {
+                    "propertyName": "type"
+                }
+            },
+            "TimelineFeedbackEventDetailsSchema": {
+                "type": "object",
+                "properties": {
+                    "score": {
+                        "type": "number"
+                    },
+                    "recommendation": {
+                        "type": "string",
+                        "enum": [
+                            "approved",
+                            "rejected",
+                            "on_hold"
+                        ]
+                    }
+                }
+            },
+            "TimelineFeedbackEventSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "type",
+                    "title",
+                    "details",
+                    "timestamp"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "feedback_event"
+                        ]
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "details": {
+                        "$ref": "#/components/schemas/TimelineFeedbackEventDetailsSchema"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "TimelineInterviewEventDetailsSchema": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "screening",
+                            "hr",
+                            "technical",
+                            "client",
+                            "final"
+                        ]
+                    },
+                    "scheduled_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "scheduled",
+                            "completed",
+                            "canceled",
+                            "no_show"
+                        ]
+                    }
+                }
+            },
+            "TimelineInterviewEventSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "type",
+                    "title",
+                    "details",
+                    "timestamp"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "interview_event"
+                        ]
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "details": {
+                        "$ref": "#/components/schemas/TimelineInterviewEventDetailsSchema"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "TimelineNoteEventDetailsSchema": {
+                "type": "object",
+                "properties": {
+                    "notes": {
+                        "type": "string"
+                    }
+                }
+            },
+            "TimelineNoteEventSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "type",
+                    "title",
+                    "details",
+                    "timestamp"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "note_event"
+                        ]
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "details": {
+                        "$ref": "#/components/schemas/TimelineNoteEventDetailsSchema"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "TimelineOfferEventDetailsSchema": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "draft",
+                            "sent",
+                            "accepted",
+                            "declined"
+                        ]
+                    },
+                    "salary": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string",
+                        "enum": [
+                            "USD",
+                            "EUR",
+                            "ARS"
+                        ]
+                    }
+                }
+            },
+            "TimelineOfferEventSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "type",
+                    "title",
+                    "details",
+                    "timestamp"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "offer_event"
+                        ]
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "details": {
+                        "$ref": "#/components/schemas/TimelineOfferEventDetailsSchema"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "TimelineSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TimelineEventSchema"
+                        }
+                    }
+                }
+            },
+            "TimelineStageEventDetailsSchema": {
+                "type": "object",
+                "properties": {
+                    "from_stage": {
+                        "type": "string",
+                        "enum": [
+                            "new",
+                            "screening",
+                            "technical_interview",
+                            "final_interview",
+                            "offer",
+                            "hired",
+                            "rejected"
+                        ],
+                        "nullable": true
+                    },
+                    "to_stage": {
+                        "type": "string",
+                        "enum": [
+                            "new",
+                            "screening",
+                            "technical_interview",
+                            "final_interview",
+                            "offer",
+                            "hired",
+                            "rejected"
+                        ]
+                    }
+                }
+            },
+            "TimelineStageEventSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "type",
+                    "title",
+                    "details",
+                    "timestamp"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "stage_change"
+                        ]
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "details": {
+                        "$ref": "#/components/schemas/TimelineStageEventDetailsSchema"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "UpdateApplicationStageRequestSchema": {
+                "type": "object",
+                "required": [
+                    "stage"
+                ],
+                "properties": {
+                    "stage": {
+                        "type": "string",
+                        "enum": [
+                            "new",
+                            "screening",
+                            "technical_interview",
+                            "final_interview",
+                            "offer",
+                            "hired",
+                            "rejected"
+                        ],
+                        "description": "Destino permitido según la etapa actual."
+                    }
+                }
+            },
+            "UserResourceSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "role"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "role": {
+                        "type": "string",
+                        "description": "Rol global del usuario: global_admin, company_admin o member."
                     }
                 }
             }
@@ -88,7 +2400,46 @@
                 "summary": "Listar — Application",
                 "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
                 "operationId": "get-applications",
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "position_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "stage",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "new",
+                                "screening",
+                                "technical_interview",
+                                "final_interview",
+                                "offer",
+                                "hired",
+                                "rejected"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "active",
+                                "hired",
+                                "rejected"
+                            ]
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Operación completada correctamente.",
@@ -104,8 +2455,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/PaginatedApplicationSchema"
                                 }
                             }
                         }
@@ -182,9 +2532,19 @@
                 "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
                 "operationId": "post-applications",
                 "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ApplicationStoreRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
-                    "200": {
-                        "description": "Operación completada correctamente.",
+                    "201": {
+                        "description": "Recurso creado correctamente.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -197,14 +2557,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/DataApplicationSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -303,14 +2681,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/DataApplicationSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -394,6 +2790,16 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateApplicationStageRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Operación completada correctamente.",
@@ -409,14 +2815,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/MessageAndApplicationResponseSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -515,14 +2939,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/TimelineSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -595,6 +3037,16 @@
                 "description": "Operación de la API v1 de TalentFlow. Throttle: login.",
                 "operationId": "post-auth-login",
                 "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Operación completada correctamente.",
@@ -610,8 +3062,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/LoginResponseSchema"
                                 }
                             }
                         }
@@ -681,8 +3132,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/MessageSchema"
                                 }
                             }
                         }
@@ -776,8 +3226,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/MeResponseSchema"
                                 }
                             }
                         }
@@ -855,7 +3304,35 @@
                 "summary": "Listar — Candidate",
                 "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
                 "operationId": "get-candidates",
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255
+                        }
+                    },
+                    {
+                        "name": "skill",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255
+                        }
+                    },
+                    {
+                        "name": "location",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Operación completada correctamente.",
@@ -871,8 +3348,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/PaginatedCandidateSchema"
                                 }
                             }
                         }
@@ -949,9 +3425,19 @@
                 "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
                 "operationId": "post-candidates",
                 "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CandidateStoreRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
-                    "200": {
-                        "description": "Operación completada correctamente.",
+                    "201": {
+                        "description": "Recurso creado correctamente.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -964,8 +3450,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/DataCandidateSchema"
                                 }
                             }
                         }
@@ -1070,14 +3555,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/DataCandidateSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -1161,6 +3664,16 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SyncCandidateSkillsRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Operación completada correctamente.",
@@ -1176,14 +3689,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/MessageAndCandidateResponseSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -1271,8 +3802,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/PaginatedCompanySchema"
                                 }
                             }
                         }
@@ -1349,9 +3879,19 @@
                 "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
                 "operationId": "post-companies",
                 "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CompanyStoreRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
-                    "200": {
-                        "description": "Operación completada correctamente.",
+                    "201": {
+                        "description": "Recurso creado correctamente.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -1364,14 +3904,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/DataCompanySchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "El usuario no tiene permisos para esta operación.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -1470,14 +4028,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/DataCompanySchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -1565,8 +4141,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/DashboardSchema"
                                 }
                             }
                         }
@@ -1644,7 +4219,63 @@
                 "summary": "Listar — Interview",
                 "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
                 "operationId": "get-interviews",
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "application_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "screening",
+                                "hr",
+                                "technical",
+                                "client",
+                                "final"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "scheduled",
+                                "completed",
+                                "canceled",
+                                "no_show"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Operación completada correctamente.",
@@ -1660,8 +4291,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/PaginatedInterviewSchema"
                                 }
                             }
                         }
@@ -1738,9 +4368,19 @@
                 "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
                 "operationId": "post-interviews",
                 "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InterviewStoreRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
-                    "200": {
-                        "description": "Operación completada correctamente.",
+                    "201": {
+                        "description": "Recurso creado correctamente.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -1753,14 +4393,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/DataInterviewSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -1859,14 +4517,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/DataInterviewSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -1948,6 +4624,16 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InterviewUpdateRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Operación completada correctamente.",
@@ -1963,14 +4649,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/DataInterviewSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -2052,6 +4756,16 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InterviewUpdateRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Operación completada correctamente.",
@@ -2067,14 +4781,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/DataInterviewSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -2158,9 +4890,19 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InterviewFeedbackStoreRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
-                    "200": {
-                        "description": "Operación completada correctamente.",
+                    "201": {
+                        "description": "Recurso creado correctamente.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -2173,14 +4915,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/MessageAndInterviewFeedbackResponseSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -2252,7 +5012,30 @@
                 "summary": "Listar — Offer",
                 "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
                 "operationId": "get-offers",
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "application_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "draft",
+                                "sent",
+                                "accepted",
+                                "declined"
+                            ]
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Operación completada correctamente.",
@@ -2268,8 +5051,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/PaginatedOfferSchema"
                                 }
                             }
                         }
@@ -2346,9 +5128,19 @@
                 "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
                 "operationId": "post-offers",
                 "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OfferStoreRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
-                    "200": {
-                        "description": "Operación completada correctamente.",
+                    "201": {
+                        "description": "Recurso creado correctamente.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -2361,14 +5153,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/MessageAndOfferResponseSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -2467,14 +5277,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/DataOfferSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -2558,6 +5386,16 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/OfferUpdateStatusRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Operación completada correctamente.",
@@ -2573,14 +5411,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/MessageAndOfferResponseSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -2652,7 +5508,49 @@
                 "summary": "Listar — Position",
                 "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
                 "operationId": "get-positions",
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "draft",
+                                "open",
+                                "paused",
+                                "closed"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "seniority",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "JR",
+                                "SSR",
+                                "SR",
+                                "LEAD",
+                                "junior",
+                                "semi_senior",
+                                "senior",
+                                "lead"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Operación completada correctamente.",
@@ -2668,8 +5566,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/PaginatedPositionSchema"
                                 }
                             }
                         }
@@ -2746,9 +5643,19 @@
                 "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
                 "operationId": "post-positions",
                 "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/PositionStoreRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
-                    "200": {
-                        "description": "Operación completada correctamente.",
+                    "201": {
+                        "description": "Recurso creado correctamente.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -2761,14 +5668,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/DataPositionSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -2867,14 +5792,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/DataPositionSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -2983,14 +5926,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/MatchResponseSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -3072,6 +6033,17 @@
                             "type": "integer",
                             "format": "int64"
                         }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10,
+                            "minimum": 1,
+                            "maximum": 100
+                        }
                     }
                 ],
                 "responses": {
@@ -3089,14 +6061,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/RecommendationsResponseSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -3180,6 +6170,16 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SyncPositionRequirementsRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Operación completada correctamente.",
@@ -3195,14 +6195,32 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/MessageAndPositionResponseSchema"
                                 }
                             }
                         }
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -3274,7 +6292,31 @@
                 "summary": "Listar — Skill",
                 "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
                 "operationId": "get-skills",
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "category",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "technical",
+                                "soft_skill",
+                                "language",
+                                "tool"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 255
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Operación completada correctamente.",
@@ -3290,8 +6332,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/PaginatedSkillSchema"
                                 }
                             }
                         }
@@ -3368,9 +6409,19 @@
                 "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
                 "operationId": "post-skills",
                 "parameters": [],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SkillStoreRequestSchema"
+                            }
+                        }
+                    }
+                },
                 "responses": {
-                    "200": {
-                        "description": "Operación completada correctamente.",
+                    "201": {
+                        "description": "Recurso creado correctamente.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -3383,8 +6434,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "object",
-                                    "additionalProperties": true
+                                    "$ref": "#/components/schemas/DataSkillSchema"
                                 }
                             }
                         }
