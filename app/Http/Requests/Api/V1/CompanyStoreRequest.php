@@ -8,7 +8,7 @@ class CompanyStoreRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->isGlobal() ?? false;
+        return $this->user()?->can('manage-companies') ?? false;
     }
 
     public function rules(): array

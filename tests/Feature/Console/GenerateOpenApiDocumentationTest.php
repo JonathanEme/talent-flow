@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Console;
 
+use App\Enums\UserRole;
 use Tests\TestCase;
 
 class GenerateOpenApiDocumentationTest extends TestCase
@@ -44,6 +45,12 @@ class GenerateOpenApiDocumentationTest extends TestCase
             );
             $this->assertArrayHasKey('404', $specification['paths']['/positions/{position}']['get']['responses']);
             $this->assertArrayHasKey('403', $specification['paths']['/companies']['post']['responses']);
+            $this->assertArrayHasKey('403', $specification['paths']['/skills']['post']['responses']);
+            $this->assertArrayHasKey('403', $specification['paths']['/applications/{application}/stage']['patch']['responses']);
+            $this->assertSame(
+                UserRole::values(),
+                $specification['components']['schemas']['UserResourceSchema']['properties']['role']['enum']
+            );
             $this->assertArrayHasKey('/positions/{position}/recommendations', $specification['paths']);
             $this->assertSame([
                 'name' => 'position',

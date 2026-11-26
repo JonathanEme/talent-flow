@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   LayoutDashboard, Briefcase, Kanban, Users,
@@ -11,6 +11,11 @@ import ToastHost from './components/ToastHost.vue';
 const route = useRoute();
 const router = useRouter();
 const user = ref<AuthUser | null>(null);
+const roleLabel = computed(() => ({
+  global_admin: 'Admin global',
+  company_admin: 'Admin empresa',
+  member: 'Miembro',
+})[user.value?.role ?? 'member']);
 
 onMounted(async () => {
   if (route.path !== '/login') {
@@ -95,6 +100,7 @@ const signOut = async () => {
         <div class="flex items-center gap-2 text-sm text-slate-600">
           <UserRound :size="16" />
           <span>{{ user.name }}</span>
+          <span class="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700">{{ roleLabel }}</span>
         </div>
         <button
           type="button"

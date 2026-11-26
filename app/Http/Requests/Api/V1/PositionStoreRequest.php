@@ -10,7 +10,7 @@ class PositionStoreRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()?->can('manage-positions') ?? false;
     }
 
     public function rules(): array

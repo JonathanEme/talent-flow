@@ -10,7 +10,7 @@ class InterviewStoreRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()?->can('manage-interviews') ?? false;
     }
 
     public function rules(): array

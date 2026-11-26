@@ -1,10 +1,13 @@
 import { apiClient } from './client';
 import { clearToken, setToken } from './token';
 
+export type UserRole = 'global_admin' | 'company_admin' | 'member';
+
 export interface AuthUser {
   id: number;
   name: string;
   email: string;
+  role: UserRole;
   company_id: number | null;
   is_global: boolean;
 }

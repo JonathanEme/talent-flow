@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserRole;
+use App\Models\Company;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -41,5 +43,33 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    public function globalAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'company_id' => null,
+            'role' => UserRole::GlobalAdmin,
+        ]);
+    }
+
+    public function companyAdmin(?Company $company = null): static
+    {
+        return $this->state(function (array $attributes) use ($company): array {
+            return [
+                'company_id' => $company?->id ?? $attributes['company_id'] ?? Company::factory(),
+                'role' => UserRole::CompanyAdmin,
+            ];
+        });
+    }
+
+    public function member(?Company $company = null): static
+    {
+        return $this->state(function (array $attributes) use ($company): array {
+            return [
+                'company_id' => $company?->id ?? $attributes['company_id'] ?? Company::factory(),
+                'role' => UserRole::Member,
+            ];
+        });
     }
 }

@@ -8,7 +8,7 @@ class CandidateStoreRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()?->can('manage-candidates') ?? false;
     }
 
     public function rules(): array

@@ -8,11 +8,14 @@ use App\Http\Resources\Api\V1\InterviewFeedbackResource;
 use App\Models\Interview;
 use App\Models\InterviewFeedback;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Gate;
 
 class InterviewFeedbackController extends Controller
 {
     public function store(InterviewFeedbackStoreRequest $request, Interview $interview): JsonResponse
     {
+        Gate::authorize('submit-interview-feedback', $interview);
+
         $this->ensureInterview($interview);
 
         $feedback = InterviewFeedback::updateOrCreate(

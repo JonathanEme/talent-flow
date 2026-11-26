@@ -67,9 +67,25 @@ Puntos de diseño relevantes:
 - Las validaciones viven en `app/Http/Requests/Api/V1` (FormRequests); no están duplicadas en controladores.
 - Las respuestas se normalizan con `app/Http/Resources/Api/V1` (`JsonResource::withoutWrapping()` está activo).
 - `app/Support/TenantScope.php` aplica el filtro de empresa y resuelve `company_id` a partir del usuario autenticado, nunca del payload.
+- `app/Enums/UserRole.php` suma autorización por rol sobre el aislamiento de empresa; los Gates se registran en `app/Providers/AppServiceProvider.php`.
 - `app/Enums` define etapas, estados de postulación y estados de oferta; las transiciones inválidas se rechazan con `InvalidTransitionException` (422).
 - El frontend usa `resources/js/api/client.ts`: guarda el token en `localStorage`, lo envía en cada petición y redirige a `/login` cuando recibe un 401.
 - La SPA se monta en `resources/views/welcome.blade.php`; `routes/web.php` actúa como catch-all para las rutas del router de Vue.
+
+### Matriz de roles
+
+`TenantScope` sigue decidiendo **qué filas** puede ver cada usuario; los Gates deciden **qué acciones** puede ejecutar. El rol se persiste en `users.role` y se expone en `/auth/me` y `/auth/login`.
+
+| Acción | `global_admin` | `company_admin` | `member` |
+| --- | --- | --- | --- |
+| Lectura de dashboard, companies, positions, candidates, applications, interviews, offers, skills y matching | Sí | Sí, en su empresa | Sí, en su empresa |
+| Crear empresas | Sí | No | No |
+| Crear/editar posiciones, candidatos, aplicaciones, entrevistas y ofertas | Sí | Sí, en su empresa | No |
+| Cambiar etapa de aplicación y estado de oferta | Sí | Sí, en su empresa | No |
+| Crear skills en el catálogo global | Sí | No | No |
+| Enviar feedback de entrevista | Sí | Sí, en su empresa | Solo si es el entrevistador asignado |
+
+Los FormRequests usan `can(<ability>)` y el feedback usa `Gate::authorize('submit-interview-feedback', $interview)`; las respuestas 403 quedan documentadas en `docs/openapi.json`.
 
 ---
 
@@ -78,7 +94,7 @@ Puntos de diseño relevantes:
 ```text
 talent-flow/
 ├── app/
-│   ├── Enums/                       # ApplicationStage, ApplicationStatus, OfferStatus
+│   ├── Enums/                       # ApplicationStage, ApplicationStatus, OfferStatus, UserRole
 │   ├── Exceptions/                  # InvalidTransitionException
 │   ├── Http/
 │   │   ├── Controllers/Api/V1/      # Auth, Dashboard, Companies, Positions, Candidates,
@@ -389,11 +405,10 @@ El workflow `.github/workflows/quality.yml` ejecuta los mismos chequeos en `push
 
 ## Estado actual y mejoras pendientes
 
-Ya implementado y documentado arriba: autenticación Sanctum, dashboard, workflow de etapas y ofertas, matching con filtros, notificaciones toast, pipeline interactivo, especificación OpenAPI con schemas concretos y documentación interactiva en `/api-docs`.
+Ya implementado y documentado arriba: autenticación Sanctum, autorización por roles con Gates, dashboard, workflow de etapas y ofertas, matching con filtros, notificaciones toast, pipeline interactivo, especificación OpenAPI con schemas concretos y documentación interactiva en `/api-docs`.
 
 Pendiente o susceptible de mejora:
 
-- Autorización más granular por rol además del aislamiento empresa/global.
 - Notificaciones persistentes/backend (actualmente solo toasts en la UI; correo en modo `log`).
 - Filtros avanzados y reportes/métricas extendidas.
 - Revisión visual final en navegador de los flujos de ranking y pipeline.

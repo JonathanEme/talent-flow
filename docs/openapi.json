@@ -592,17 +592,28 @@
                 "type": "object",
                 "required": [
                     "score",
-                    "comments",
                     "recommendation"
                 ],
                 "properties": {
                     "score": {
-                        "type": "number",
-                        "minimum": 0,
+                        "type": "integer",
+                        "minimum": 1,
                         "maximum": 10
                     },
-                    "comments": {
-                        "type": "string"
+                    "strengths": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 5000
+                    },
+                    "weaknesses": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 5000
+                    },
+                    "general_notes": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 5000
                     },
                     "recommendation": {
                         "type": "string",
@@ -1164,8 +1175,7 @@
                 "type": "object",
                 "required": [
                     "application_id",
-                    "salary",
-                    "currency",
+                    "salary_offered",
                     "start_date"
                 ],
                 "properties": {
@@ -1173,7 +1183,7 @@
                         "type": "integer",
                         "description": "ID de aplicación existente en la empresa activa."
                     },
-                    "salary": {
+                    "salary_offered": {
                         "oneOf": [
                             {
                                 "type": "number"
@@ -1182,7 +1192,7 @@
                                 "type": "string"
                             }
                         ],
-                        "description": "Monto ofrecido; debe ser numérico o string numérico."
+                        "minimum": 1
                     },
                     "currency": {
                         "type": "string",
@@ -1190,15 +1200,28 @@
                             "USD",
                             "EUR",
                             "ARS"
-                        ]
+                        ],
+                        "nullable": true
                     },
                     "start_date": {
                         "type": "string",
-                        "format": "date"
+                        "format": "date",
+                        "description": "Fecha de inicio; debe ser hoy o posterior."
                     },
-                    "notes": {
+                    "expiration_date": {
                         "type": "string",
+                        "format": "date",
                         "nullable": true
+                    },
+                    "benefits_summary": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 5000
+                    },
+                    "terms_and_conditions": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 5000
                     }
                 }
             },
@@ -1765,11 +1788,10 @@
                     "company_id",
                     "title",
                     "description",
-                    "status",
                     "seniority",
-                    "location",
                     "modality",
-                    "employment_type"
+                    "employment_type",
+                    "opened_at"
                 ],
                 "properties": {
                     "company_id": {
@@ -1781,16 +1803,8 @@
                         "maxLength": 255
                     },
                     "description": {
-                        "type": "string"
-                    },
-                    "status": {
                         "type": "string",
-                        "enum": [
-                            "draft",
-                            "open",
-                            "paused",
-                            "closed"
-                        ]
+                        "maxLength": 5000
                     },
                     "seniority": {
                         "type": "string",
@@ -1805,10 +1819,6 @@
                             "lead"
                         ]
                     },
-                    "location": {
-                        "type": "string",
-                        "maxLength": 255
-                    },
                     "modality": {
                         "type": "string",
                         "enum": [
@@ -1816,6 +1826,11 @@
                             "hybrid",
                             "on_site"
                         ]
+                    },
+                    "location": {
+                        "type": "string",
+                        "nullable": true,
+                        "maxLength": 150
                     },
                     "employment_type": {
                         "type": "string",
@@ -1852,12 +1867,27 @@
                             }
                         ]
                     },
-                    "currency": {
+                    "vacancies": {
+                        "type": "integer",
+                        "nullable": true,
+                        "minimum": 1
+                    },
+                    "opened_at": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "closes_at": {
+                        "type": "string",
+                        "format": "date",
+                        "nullable": true
+                    },
+                    "status": {
                         "type": "string",
                         "enum": [
-                            "USD",
-                            "EUR",
-                            "ARS"
+                            "draft",
+                            "open",
+                            "paused",
+                            "closed"
                         ],
                         "nullable": true
                     }
@@ -2370,7 +2400,9 @@
                     "id",
                     "name",
                     "email",
-                    "role"
+                    "role",
+                    "company_id",
+                    "is_global"
                 ],
                 "properties": {
                     "id": {
@@ -2385,7 +2417,19 @@
                     },
                     "role": {
                         "type": "string",
-                        "description": "Rol global del usuario: global_admin, company_admin o member."
+                        "enum": [
+                            "global_admin",
+                            "company_admin",
+                            "member"
+                        ],
+                        "description": "Rol de autorización del usuario."
+                    },
+                    "company_id": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "is_global": {
+                        "type": "boolean"
                     }
                 }
             }
@@ -2564,6 +2608,25 @@
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "El usuario no tiene permisos para esta operación.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -2822,6 +2885,25 @@
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "El usuario no tiene permisos para esta operación.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -3474,6 +3556,25 @@
                             }
                         }
                     },
+                    "403": {
+                        "description": "El usuario no tiene permisos para esta operación.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
                     "422": {
                         "description": "Validación fallida o transición no permitida.",
                         "headers": {
@@ -3696,6 +3797,25 @@
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "El usuario no tiene permisos para esta operación.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -4417,6 +4537,25 @@
                             }
                         }
                     },
+                    "403": {
+                        "description": "El usuario no tiene permisos para esta operación.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
                     "404": {
                         "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
@@ -4673,6 +4812,25 @@
                             }
                         }
                     },
+                    "403": {
+                        "description": "El usuario no tiene permisos para esta operación.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
                     "404": {
                         "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
@@ -4788,6 +4946,25 @@
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "El usuario no tiene permisos para esta operación.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -4922,6 +5099,25 @@
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "El usuario no tiene permisos para esta operación.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -5160,6 +5356,25 @@
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "El usuario no tiene permisos para esta operación.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -5435,6 +5650,25 @@
                             }
                         }
                     },
+                    "403": {
+                        "description": "El usuario no tiene permisos para esta operación.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
                     "404": {
                         "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
@@ -5675,6 +5909,25 @@
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "El usuario no tiene permisos para esta operación.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",
@@ -6219,6 +6472,25 @@
                             }
                         }
                     },
+                    "403": {
+                        "description": "El usuario no tiene permisos para esta operación.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
                     "404": {
                         "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
                         "headers": {
@@ -6441,6 +6713,25 @@
                     },
                     "401": {
                         "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "El usuario no tiene permisos para esta operación.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",

@@ -3,6 +3,7 @@
 use App\Enums\ApplicationStage;
 use App\Enums\ApplicationStatus;
 use App\Enums\OfferStatus;
+use App\Enums\UserRole;
 use App\Support\DomainValues;
 
 $string = fn (array $extra = []): array => array_merge(['type' => 'string'], $extra);
@@ -137,19 +138,21 @@ return [
 
         'PositionStoreRequestSchema' => [
             'type' => 'object',
-            'required' => ['company_id', 'title', 'description', 'status', 'seniority', 'location', 'modality', 'employment_type'],
+            'required' => ['company_id', 'title', 'description', 'seniority', 'modality', 'employment_type', 'opened_at'],
             'properties' => [
                 'company_id' => $integer(['description' => 'ID de empresa existente.']),
                 'title' => $string(['maxLength' => 255]),
-                'description' => $string(),
-                'status' => $enum(DomainValues::POSITION_STATUSES),
+                'description' => $string(['maxLength' => 5000]),
                 'seniority' => $enum(DomainValues::SENIORITIES),
-                'location' => $string(['maxLength' => 255]),
                 'modality' => $enum(DomainValues::MODALITIES),
+                'location' => $nullableString(['maxLength' => 150]),
                 'employment_type' => $enum(DomainValues::EMPLOYMENT_TYPES),
                 'salary_min' => $nullableNumeric(),
                 'salary_max' => $nullableNumeric(),
-                'currency' => $nullableEnum(DomainValues::CURRENCIES),
+                'vacancies' => $nullableInteger(['minimum' => 1]),
+                'opened_at' => $date(),
+                'closes_at' => $nullableDate(),
+                'status' => $nullableEnum(DomainValues::POSITION_STATUSES),
             ],
         ],
 
@@ -257,10 +260,12 @@ return [
 
         'InterviewFeedbackStoreRequestSchema' => [
             'type' => 'object',
-            'required' => ['score', 'comments', 'recommendation'],
+            'required' => ['score', 'recommendation'],
             'properties' => [
-                'score' => $number(['minimum' => 0, 'maximum' => 10]),
-                'comments' => $string(),
+                'score' => $integer(['minimum' => 1, 'maximum' => 10]),
+                'strengths' => $nullableString(['maxLength' => 5000]),
+                'weaknesses' => $nullableString(['maxLength' => 5000]),
+                'general_notes' => $nullableString(['maxLength' => 5000]),
                 'recommendation' => $enum(DomainValues::RECOMMENDATIONS),
             ],
         ],
@@ -275,13 +280,15 @@ return [
 
         'OfferStoreRequestSchema' => [
             'type' => 'object',
-            'required' => ['application_id', 'salary', 'currency', 'start_date'],
+            'required' => ['application_id', 'salary_offered', 'start_date'],
             'properties' => [
                 'application_id' => $integer(['description' => 'ID de aplicación existente en la empresa activa.']),
-                'salary' => $numeric(['description' => 'Monto ofrecido; debe ser numérico o string numérico.']),
-                'currency' => $enum(DomainValues::CURRENCIES),
-                'start_date' => $date(),
-                'notes' => $nullableString(),
+                'salary_offered' => $numeric(['minimum' => 1]),
+                'currency' => $nullableEnum(DomainValues::CURRENCIES),
+                'start_date' => $date(['description' => 'Fecha de inicio; debe ser hoy o posterior.']),
+                'expiration_date' => $nullableDate(),
+                'benefits_summary' => $nullableString(['maxLength' => 5000]),
+                'terms_and_conditions' => $nullableString(['maxLength' => 5000]),
             ],
         ],
 
@@ -350,12 +357,14 @@ return [
 
         'UserResourceSchema' => [
             'type' => 'object',
-            'required' => ['id', 'name', 'email', 'role'],
+            'required' => ['id', 'name', 'email', 'role', 'company_id', 'is_global'],
             'properties' => [
                 'id' => $integer(),
                 'name' => $string(),
                 'email' => $string(['format' => 'email']),
-                'role' => $string(['description' => 'Rol global del usuario: global_admin, company_admin o member.']),
+                'role' => $enum(UserRole::values(), ['description' => 'Rol de autorización del usuario.']),
+                'company_id' => $nullableInteger(),
+                'is_global' => $boolean(),
             ],
         ],
 
@@ -765,6 +774,7 @@ return [
             'request' => 'PositionStoreRequestSchema',
             'response' => 'DataPositionSchema',
             'status' => 201,
+            'forbidden' => true,
             'not_found' => true,
         ],
         'get /positions/{position}' => [
@@ -779,6 +789,7 @@ return [
             'request' => 'CandidateStoreRequestSchema',
             'response' => 'DataCandidateSchema',
             'status' => 201,
+            'forbidden' => true,
         ],
         'get /candidates/{candidate}' => [
             'response' => 'DataCandidateSchema',
@@ -792,6 +803,7 @@ return [
             'request' => 'ApplicationStoreRequestSchema',
             'response' => 'DataApplicationSchema',
             'status' => 201,
+            'forbidden' => true,
             'not_found' => true,
         ],
         'get /applications/{application}' => [
@@ -805,6 +817,7 @@ return [
         'patch /applications/{application}/stage' => [
             'request' => 'UpdateApplicationStageRequestSchema',
             'response' => 'MessageAndApplicationResponseSchema',
+            'forbidden' => true,
             'not_found' => true,
         ],
         'get /skills' => [
@@ -815,6 +828,7 @@ return [
             'request' => 'SkillStoreRequestSchema',
             'response' => 'DataSkillSchema',
             'status' => 201,
+            'forbidden' => true,
         ],
         'get /interviews' => [
             'query' => 'InterviewIndexQuerySchema',
@@ -824,6 +838,7 @@ return [
             'request' => 'InterviewStoreRequestSchema',
             'response' => 'DataInterviewSchema',
             'status' => 201,
+            'forbidden' => true,
             'not_found' => true,
         ],
         'get /interviews/{interview}' => [
@@ -833,17 +848,20 @@ return [
         'put /interviews/{interview}' => [
             'request' => 'InterviewUpdateRequestSchema',
             'response' => 'DataInterviewSchema',
+            'forbidden' => true,
             'not_found' => true,
         ],
         'patch /interviews/{interview}' => [
             'request' => 'InterviewUpdateRequestSchema',
             'response' => 'DataInterviewSchema',
+            'forbidden' => true,
             'not_found' => true,
         ],
         'post /interviews/{interview}/feedback' => [
             'request' => 'InterviewFeedbackStoreRequestSchema',
             'response' => 'MessageAndInterviewFeedbackResponseSchema',
             'status' => 201,
+            'forbidden' => true,
             'not_found' => true,
         ],
         'get /offers' => [
@@ -854,6 +872,7 @@ return [
             'request' => 'OfferStoreRequestSchema',
             'response' => 'MessageAndOfferResponseSchema',
             'status' => 201,
+            'forbidden' => true,
             'not_found' => true,
         ],
         'get /offers/{offer}' => [
@@ -863,16 +882,19 @@ return [
         'patch /offers/{offer}/status' => [
             'request' => 'OfferUpdateStatusRequestSchema',
             'response' => 'MessageAndOfferResponseSchema',
+            'forbidden' => true,
             'not_found' => true,
         ],
         'post /positions/{position}/requirements' => [
             'request' => 'SyncPositionRequirementsRequestSchema',
             'response' => 'MessageAndPositionResponseSchema',
+            'forbidden' => true,
             'not_found' => true,
         ],
         'post /candidates/{candidate}/skills' => [
             'request' => 'SyncCandidateSkillsRequestSchema',
             'response' => 'MessageAndCandidateResponseSchema',
+            'forbidden' => true,
             'not_found' => true,
         ],
         'get /positions/{position}/recommendations' => [
