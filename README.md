@@ -118,12 +118,13 @@ talent-flow/
 ├── resources/
 │   ├── css/app.css
 │   ├── js/
-│   │   ├── api/                     # client, auth, token, pagination
+│   │   ├── api/                     # client, auth, token, pagination, notifications
 │   │   ├── api-docs.ts              # arranque de Redoc
-│   │   ├── components/              # StatePanel, PaginationControls, ToastHost, InterviewFormModal
-│   │   ├── composables/             # usePaginatedList, useNotifications
+│   │   ├── components/              # StatePanel, PaginationControls, ToastHost, NotificationBell, InterviewFormModal
+│   │   ├── composables/             # usePaginatedList, useNotifications, usePersistentNotifications
 │   │   ├── router/index.ts
 │   │   ├── types/ats.ts
+│   │   ├── types/notifications.ts
 │   │   ├── types/redoc-standalone.d.ts
 │   │   └── views/                   # Dashboard, Positions, Pipeline, Candidates, Companies,
 │   │                                # Interviews, Offers, Timeline, Login
@@ -135,7 +136,7 @@ talent-flow/
 │   └── web.php                      # /api-docs, /api-docs.json y catch-all SPA
 ├── tests/
 │   ├── Concerns/CreatesAtsData.php
-│   ├── Feature/Api/                 # contrato, auth, tenant, lifecycle, matching, calidad
+│   ├── Feature/Api/                 # contrato, auth, tenant, lifecycle, matching, calidad, notificaciones
 │   ├── Feature/Console/             # generación de OpenAPI
 │   └── Feature/ApiDocumentationTest.php
 ├── .github/workflows/quality.yml
@@ -183,7 +184,7 @@ hired               → offer
 rejected            → new
 ```
 
-Cada cambio pasa por `ApplicationService::transitionStage()`, que valida la transición, bloquea la fila, escribe un `ApplicationStageLog` y sincroniza `status` (`active`, `hired` o `rejected`). El frontend replica el mismo mapa en `PipelineKanbanView.vue` para impedir soltar tarjetas en columnas inválidas.
+Cada cambio pasa por `ApplicationService::transitionStage()`, que valida la transición, bloquea la fila, escribe un `ApplicationStageLog` y sincroniza `status` (`active`, `hired` o `rejected`). Los eventos relevantes (postulación, cambio de etapa, entrevistas, feedback y ofertas) generan notificaciones persistentes en base de datos y se envían por mail en modo `log`. El frontend replica el mismo mapa en `PipelineKanbanView.vue` para impedir soltar tarjetas en columnas inválidas.
 
 El ranking de una posición (`PositionDetailView.vue`) muestra candidatos del bucket de talento y también los ya postulados, con `application_id` y `application_stage`. El badge «En proceso» navega a `/pipeline?position=<id>&application=<id>`; el pipeline preselecciona la vacante, resalta la tarjeta y permite limpiar la selección.
 
@@ -405,11 +406,10 @@ El workflow `.github/workflows/quality.yml` ejecuta los mismos chequeos en `push
 
 ## Estado actual y mejoras pendientes
 
-Ya implementado y documentado arriba: autenticación Sanctum, autorización por roles con Gates, dashboard, workflow de etapas y ofertas, matching con filtros, notificaciones toast, pipeline interactivo, especificación OpenAPI con schemas concretos y documentación interactiva en `/api-docs`.
+Ya implementado y documentado arriba: autenticación Sanctum, autorización por roles con Gates, dashboard, workflow de etapas y ofertas, matching con filtros, notificaciones persistentes (base de datos + mail log) con inbox en la UI, pipeline interactivo, especificación OpenAPI con schemas concretos y documentación interactiva en `/api-docs`.
 
 Pendiente o susceptible de mejora:
 
-- Notificaciones persistentes/backend (actualmente solo toasts en la UI; correo en modo `log`).
 - Filtros avanzados y reportes/métricas extendidas.
 - Revisión visual final en navegador de los flujos de ranking y pipeline.
 

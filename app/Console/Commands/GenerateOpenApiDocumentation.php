@@ -186,16 +186,19 @@ class GenerateOpenApiDocumentation extends Command
     {
         preg_match_all('/\{([^}]+)\}/', $path, $matches);
 
-        $parameters = array_map(function (string $parameter): array {
+        $pathOverrides = $operationConfig['path_parameters'] ?? [];
+
+        $parameters = array_map(function (string $parameter) use ($pathOverrides): array {
             $optional = Str::endsWith($parameter, '?');
             $name = $optional ? Str::beforeLast($parameter, '?') : $parameter;
+            $schema = $pathOverrides[$name] ?? ['type' => 'integer', 'format' => 'int64'];
 
             return [
                 'name' => $name,
                 'in' => 'path',
                 'required' => ! $optional,
                 'description' => 'Identificador de '.Str::headline($name).'.',
-                'schema' => ['type' => 'integer', 'format' => 'int64'],
+                'schema' => $schema,
             ];
         }, $matches[1]);
 

@@ -19,7 +19,7 @@ class GenerateOpenApiDocumentationTest extends TestCase
 
             $this->assertSame('3.0.3', $specification['openapi']);
             $this->assertStringEndsWith('/api/v1', $specification['servers'][0]['url']);
-            $this->assertSame(34, $this->countOperations($specification));
+            $this->assertSame(37, $this->countOperations($specification));
             $this->assertArrayHasKey('/auth/login', $specification['paths']);
             $this->assertArrayHasKey('post', $specification['paths']['/auth/login']);
             $this->assertArrayNotHasKey('security', $specification['paths']['/auth/login']['post']);
@@ -52,6 +52,10 @@ class GenerateOpenApiDocumentationTest extends TestCase
                 $specification['components']['schemas']['UserResourceSchema']['properties']['role']['enum']
             );
             $this->assertArrayHasKey('/positions/{position}/recommendations', $specification['paths']);
+            $this->assertArrayHasKey('/notifications', $specification['paths']);
+            $this->assertArrayHasKey('/notifications/read-all', $specification['paths']);
+            $this->assertSame('string', $specification['paths']['/notifications/{notification}/read']['patch']['parameters'][0]['schema']['type']);
+            $this->assertSame('uuid', $specification['paths']['/notifications/{notification}/read']['patch']['parameters'][0]['schema']['format']);
             $this->assertSame([
                 'name' => 'position',
                 'in' => 'path',

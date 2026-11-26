@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   LayoutDashboard, Briefcase, Kanban, Users,
@@ -7,6 +7,7 @@ import {
 } from 'lucide-vue-next';
 import { fetchMe, logout, type AuthUser } from './api/auth';
 import ToastHost from './components/ToastHost.vue';
+import NotificationBell from './components/NotificationBell.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -17,11 +18,12 @@ const roleLabel = computed(() => ({
   member: 'Miembro',
 })[user.value?.role ?? 'member']);
 
-onMounted(async () => {
-  if (route.path !== '/login') {
-    user.value = await fetchMe();
-  }
-});
+const syncUser = async (): Promise<void> => {
+  user.value = route.path === '/login' ? null : await fetchMe();
+};
+
+onMounted(syncUser);
+watch(() => route.path, syncUser);
 
 const signOut = async () => {
   await logout();
@@ -97,6 +99,7 @@ const signOut = async () => {
       </nav>
 
       <div v-if="user" class="flex items-center gap-3 border-l border-slate-200 pl-4">
+        <NotificationBell />
         <div class="flex items-center gap-2 text-sm text-slate-600">
           <UserRound :size="16" />
           <span>{{ user.name }}</span>

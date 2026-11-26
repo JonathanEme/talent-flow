@@ -36,6 +36,9 @@
             "name": "InterviewFeedback"
         },
         {
+            "name": "Notification"
+        },
+        {
             "name": "Offer"
         },
         {
@@ -510,6 +513,17 @@
                 "properties": {
                     "data": {
                         "$ref": "#/components/schemas/InterviewResourceSchema"
+                    }
+                }
+            },
+            "DataNotificationSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "$ref": "#/components/schemas/NotificationResourceSchema"
                     }
                 }
             },
@@ -1033,6 +1047,21 @@
                     }
                 }
             },
+            "MessageAndNotificationResponseSchema": {
+                "type": "object",
+                "required": [
+                    "message",
+                    "data"
+                ],
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "$ref": "#/components/schemas/NotificationResourceSchema"
+                    }
+                }
+            },
             "MessageAndOfferResponseSchema": {
                 "type": "object",
                 "required": [
@@ -1101,6 +1130,106 @@
                 "properties": {
                     "message": {
                         "type": "string"
+                    }
+                }
+            },
+            "NotificationCategorySchema": {
+                "type": "string",
+                "enum": [
+                    "application.created",
+                    "application.stage_changed",
+                    "interview.scheduled",
+                    "interview.status_changed",
+                    "interview.feedback_submitted",
+                    "offer.created",
+                    "offer.status_changed"
+                ]
+            },
+            "NotificationResourceSchema": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "category",
+                    "title",
+                    "message",
+                    "url",
+                    "read_at",
+                    "created_at",
+                    "data"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "category": {
+                        "$ref": "#/components/schemas/NotificationCategorySchema"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "read_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "data": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                }
+            },
+            "NotificationsIndexSchema": {
+                "type": "object",
+                "required": [
+                    "data",
+                    "links",
+                    "meta",
+                    "unread_count"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "data",
+                            "links",
+                            "meta"
+                        ],
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/NotificationResourceSchema"
+                                }
+                            },
+                            "links": {
+                                "$ref": "#/components/schemas/PaginationLinksSchema"
+                            },
+                            "meta": {
+                                "$ref": "#/components/schemas/PaginationMetaSchema"
+                            }
+                        }
+                    },
+                    "links": {
+                        "$ref": "#/components/schemas/PaginationLinksSchema"
+                    },
+                    "meta": {
+                        "$ref": "#/components/schemas/PaginationMetaSchema"
+                    },
+                    "unread_count": {
+                        "type": "integer",
+                        "minimum": 0
                     }
                 }
             },
@@ -1401,6 +1530,36 @@
                                 "type": "array",
                                 "items": {
                                     "$ref": "#/components/schemas/InterviewResourceSchema"
+                                }
+                            },
+                            "links": {
+                                "$ref": "#/components/schemas/PaginationLinksSchema"
+                            },
+                            "meta": {
+                                "$ref": "#/components/schemas/PaginationMetaSchema"
+                            }
+                        }
+                    }
+                }
+            },
+            "PaginatedNotificationSchema": {
+                "type": "object",
+                "required": [
+                    "data"
+                ],
+                "properties": {
+                    "data": {
+                        "type": "object",
+                        "required": [
+                            "data",
+                            "links",
+                            "meta"
+                        ],
+                        "properties": {
+                            "data": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/NotificationResourceSchema"
                                 }
                             },
                             "links": {
@@ -5118,6 +5277,318 @@
                     },
                     "403": {
                         "description": "El usuario no tiene permisos para esta operación.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Recurso no encontrado o fuera del alcance de la empresa activa.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/notifications": {
+            "get": {
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Listar — Notification",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "get-notifications",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/NotificationsIndexSchema"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/notifications/read-all": {
+            "patch": {
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Mark All Read — Notification",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "patch-notifications-read-all",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MessageSchema"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validación fallida o transición no permitida.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Límite de peticiones excedido.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/notifications/{notification}/read": {
+            "patch": {
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Mark Read — Notification",
+                "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
+                "operationId": "patch-notifications-notification-read",
+                "parameters": [
+                    {
+                        "name": "notification",
+                        "in": "path",
+                        "required": true,
+                        "description": "Identificador de Notification.",
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Operación completada correctamente.",
+                        "headers": {
+                            "X-API-Version": {
+                                "description": "Versión de la API.",
+                                "schema": {
+                                    "type": "string",
+                                    "example": "1"
+                                }
+                            }
+                        },
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DataNotificationSchema"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Token ausente, inválido o expirado.",
                         "headers": {
                             "X-API-Version": {
                                 "description": "Versión de la API.",

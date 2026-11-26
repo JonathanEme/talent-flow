@@ -13,12 +13,14 @@ use App\Http\Resources\Api\V1\TimelineResource;
 use App\Models\Application;
 use App\Models\Position;
 use App\Services\ApplicationService;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 
 class ApplicationController extends Controller
 {
     public function __construct(
-        protected ApplicationService $applicationService
+        protected ApplicationService $applicationService,
+        protected NotificationService $notificationService
     ) {}
 
     public function index(ApplicationIndexRequest $request): JsonResponse
@@ -72,6 +74,8 @@ class ApplicationController extends Controller
             'Postulación inicial registrada.'
         );
 
+        $this->notificationService->applicationCreated($application, auth()->id());
+
         return response()->json([
             'data' => new ApplicationResource($application->load(['candidate', 'position.company'])),
         ], 201);
@@ -92,12 +96,19 @@ class ApplicationController extends Controller
 
         $this->ensureApplication($application);
 
+        $fromStage = $application->stage instanceof ApplicationStage ? $application->stage->value : (string) $application->stage;
+
         $updatedApplication = $this->applicationService->transitionStage(
             $application,
             $validated['stage'],
             auth()->id(),
             $validated['comment'] ?? null
         );
+
+        $toStage = $updatedApplication->stage instanceof ApplicationStage ? $updatedApplication->stage->value : (string) $updatedApplication->stage;
+        if ($fromStage !== $toStage) {
+            $this->notificationService->applicationStageChanged($updatedApplication, $fromStage, $toStage, auth()->id());
+        }
 
         return response()->json([
             'message' => 'Stage updated and logged successfully.',

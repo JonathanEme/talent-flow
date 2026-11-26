@@ -13,13 +13,15 @@ use App\Http\Resources\Api\V1\OfferResource;
 use App\Models\Application;
 use App\Models\Offer;
 use App\Services\ApplicationService;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class OfferController extends Controller
 {
     public function __construct(
-        protected ApplicationService $applicationService
+        protected ApplicationService $applicationService,
+        protected NotificationService $notificationService
     ) {}
 
     public function index(OfferIndexRequest $request): JsonResponse
@@ -72,6 +74,8 @@ class OfferController extends Controller
             return $offer;
         });
 
+        $this->notificationService->offerCreated($offer, auth()->id());
+
         return response()->json([
             'message' => 'Offer created successfully.',
             'data' => new OfferResource($offer->load(['application.candidate', 'application.position', 'creator'])),
@@ -93,14 +97,16 @@ class OfferController extends Controller
 
         $this->ensureOffer($offer);
 
+        $currentStatus = $offer->status instanceof OfferStatus ? $offer->status->value : (string) $offer->status;
+
         DB::transaction(function () use ($offer, $validated) {
-            $currentStatus = $offer->status instanceof OfferStatus
+            $current = $offer->status instanceof OfferStatus
                 ? $offer->status
                 : OfferStatus::from($offer->status);
             $newStatus = OfferStatus::from($validated['status']);
 
-            if (! $currentStatus->canTransitionTo($newStatus)) {
-                throw InvalidTransitionException::for('la oferta', $currentStatus->value, $newStatus->value);
+            if (! $current->canTransitionTo($newStatus)) {
+                throw InvalidTransitionException::for('la oferta', $current->value, $newStatus->value);
             }
 
             $offer->update([
@@ -135,9 +141,15 @@ class OfferController extends Controller
             };
         });
 
+        $offer = $offer->fresh(['application.candidate', 'application.position']);
+        $toStatus = $offer->status instanceof OfferStatus ? $offer->status->value : (string) $offer->status;
+        if ($currentStatus !== $toStatus) {
+            $this->notificationService->offerStatusChanged($offer, $currentStatus, $toStatus, auth()->id());
+        }
+
         return response()->json([
             'message' => 'Offer status updated successfully.',
-            'data' => new OfferResource($offer->fresh(['application.candidate', 'application.position'])),
+            'data' => new OfferResource($offer),
         ]);
     }
 

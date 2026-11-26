@@ -10,10 +10,15 @@ use App\Http\Resources\Api\V1\InterviewResource;
 use App\Models\Application;
 use App\Models\Interview;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 
 class InterviewController extends Controller
 {
+    public function __construct(
+        protected NotificationService $notificationService
+    ) {}
+
     public function index(InterviewIndexRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -53,6 +58,8 @@ class InterviewController extends Controller
             'interviewer_id' => $validated['interviewer_id'] ?? auth()->id(),
         ]));
 
+        $this->notificationService->interviewScheduled($interview, auth()->id());
+
         return response()->json([
             'data' => new InterviewResource($interview->load(['application.candidate', 'application.position', 'interviewer'])),
         ], 201);
@@ -71,10 +78,17 @@ class InterviewController extends Controller
     {
         $this->ensureInterview($interview);
 
+        $fromStatus = (string) $interview->status;
         $interview->update($request->validated());
+        $interview = $interview->fresh(['application.candidate', 'application.position', 'interviewer', 'feedbacks']);
+
+        $toStatus = (string) $interview->status;
+        if ($fromStatus !== $toStatus) {
+            $this->notificationService->interviewStatusChanged($interview, $fromStatus, $toStatus, auth()->id());
+        }
 
         return response()->json([
-            'data' => new InterviewResource($interview->fresh(['application.candidate', 'application.position', 'interviewer', 'feedbacks'])),
+            'data' => new InterviewResource($interview),
         ]);
     }
 }

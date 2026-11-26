@@ -2,6 +2,7 @@
 
 use App\Enums\ApplicationStage;
 use App\Enums\ApplicationStatus;
+use App\Enums\NotificationCategory;
 use App\Enums\OfferStatus;
 use App\Enums\UserRole;
 use App\Support\DomainValues;
@@ -725,6 +726,42 @@ return [
                 'data' => $arrayOf('TimelineEventSchema'),
             ],
         ],
+
+        'NotificationCategorySchema' => $enum(NotificationCategory::values()),
+
+        'NotificationResourceSchema' => [
+            'type' => 'object',
+            'required' => ['id', 'category', 'title', 'message', 'url', 'read_at', 'created_at', 'data'],
+            'properties' => [
+                'id' => $string(['format' => 'uuid']),
+                'category' => $ref('NotificationCategorySchema'),
+                'title' => $string(),
+                'message' => $string(),
+                'url' => $nullableString(),
+                'read_at' => $nullableDateTime(),
+                'created_at' => $dateTime(),
+                'data' => ['type' => 'object', 'additionalProperties' => true],
+            ],
+        ],
+
+        'NotificationsIndexSchema' => [
+            'type' => 'object',
+            'required' => ['data', 'links', 'meta', 'unread_count'],
+            'properties' => [
+                'data' => [
+                    'type' => 'object',
+                    'required' => ['data', 'links', 'meta'],
+                    'properties' => [
+                        'data' => $arrayOf('NotificationResourceSchema'),
+                        'links' => $ref('PaginationLinksSchema'),
+                        'meta' => $ref('PaginationMetaSchema'),
+                    ],
+                ],
+                'links' => $ref('PaginationLinksSchema'),
+                'meta' => $ref('PaginationMetaSchema'),
+                'unread_count' => $integer(['minimum' => 0]),
+            ],
+        ],
     ],
 
     'resources' => [
@@ -737,6 +774,7 @@ return [
         'Interview' => 'InterviewResourceSchema',
         'InterviewFeedback' => 'InterviewFeedbackResourceSchema',
         'Offer' => 'OfferResourceSchema',
+        'Notification' => 'NotificationResourceSchema',
     ],
 
     'operations' => [
@@ -749,6 +787,19 @@ return [
         ],
         'get /auth/me' => [
             'response' => 'MeResponseSchema',
+        ],
+        'get /notifications' => [
+            'response' => 'NotificationsIndexSchema',
+        ],
+        'patch /notifications/read-all' => [
+            'response' => 'MessageSchema',
+        ],
+        'patch /notifications/{notification}/read' => [
+            'response' => 'DataNotificationSchema',
+            'path_parameters' => [
+                'notification' => ['type' => 'string', 'format' => 'uuid'],
+            ],
+            'not_found' => true,
         ],
         'get /dashboard' => [
             'response' => 'DashboardSchema',

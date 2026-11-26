@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\CompanyController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\InterviewController;
 use App\Http\Controllers\Api\V1\InterviewFeedbackController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OfferController;
 use App\Http\Controllers\Api\V1\PositionController;
 use App\Http\Controllers\Api\V1\PositionMatchingController;
@@ -21,6 +22,10 @@ Route::prefix('v1')->middleware('api.version')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('auth/logout', [AuthController::class, 'logout']);
         Route::get('auth/me', [AuthController::class, 'me']);
+
+        Route::get('notifications', [NotificationController::class, 'index']);
+        Route::patch('notifications/read-all', [NotificationController::class, 'markAllRead']);
+        Route::patch('notifications/{notification}/read', [NotificationController::class, 'markRead']);
 
         Route::get('dashboard', [DashboardController::class, 'stats']);
         Route::apiResource('companies', CompanyController::class)->only(['index', 'store', 'show']);
