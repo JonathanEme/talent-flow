@@ -404,7 +404,12 @@ El workflow `.github/workflows/quality.yml` ejecuta los mismos chequeos en `push
 
 ---
 
-## Estado actual`r`n`r`nYa implementado y documentado arriba: autenticación Sanctum, autorización por roles con Gates, dashboard con KPIs y distribución por etapa/estado, filtros avanzados en listados, reportes básicos por rango de fechas, workflow de etapas y ofertas, matching con filtros, notificaciones persistentes (base de datos + mail log) con inbox en la UI, pipeline interactivo, especificación OpenAPI con schemas concretos y documentación interactiva en `/api-docs`.`r`n`r`n---`r`n`r`n## Autor
+## Estado actual
+
+Ya implementado y documentado arriba: autenticación Sanctum, autorización por roles con Gates, dashboard con KPIs y distribución por etapa/estado, filtros avanzados en listados, reportes básicos por rango de fechas, workflow de etapas y ofertas, matching con filtros, notificaciones persistentes (base de datos + mail log) con inbox en la UI, pipeline interactivo, especificación OpenAPI con schemas concretos y documentación interactiva en `/api-docs`.
+---
+
+## Autor
 
 **Jonathan Mendola** — Backend Developer especializado en PHP y Laravel.
 
