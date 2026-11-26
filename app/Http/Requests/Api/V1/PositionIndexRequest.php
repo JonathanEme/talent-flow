@@ -18,6 +18,8 @@ class PositionIndexRequest extends FormRequest
         return [
             'company_id' => ['nullable', 'integer', 'exists:companies,id'],
             'status' => ['nullable', 'string', Rule::in(DomainValues::POSITION_STATUSES)],
+            'seniority' => ['nullable', 'string', Rule::in(DomainValues::SENIORITIES)],
+            'search' => ['nullable', 'string', 'max:150'],
         ];
     }
 }

@@ -37,7 +37,7 @@ class GenerateOpenApiDocumentationTest extends TestCase
                 ['$ref' => '#/components/schemas/PaginatedPositionSchema'],
                 $specification['paths']['/positions']['get']['responses']['200']['content']['application/json']['schema']
             );
-            $this->assertSame('status', $specification['paths']['/positions']['get']['parameters'][0]['name']);
+            $this->assertSame('company_id', $specification['paths']['/positions']['get']['parameters'][0]['name']);
             $this->assertSame('query', $specification['paths']['/positions']['get']['parameters'][0]['in']);
             $this->assertSame(
                 ['$ref' => '#/components/schemas/DataPositionSchema'],

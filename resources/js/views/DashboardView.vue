@@ -50,7 +50,7 @@ onMounted(loadDashboard);
 
     <div v-else class="space-y-6">
       <!-- KPIs -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <div class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-sm">
           <div>
             <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Vacantes Abiertas</span>
@@ -90,36 +90,61 @@ onMounted(loadDashboard);
             <Calendar :size="22" />
           </div>
         </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Contratados</span>
+          <div class="text-3xl font-black text-emerald-700 mt-1">{{ data.kpis.hired_applications }}</div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rechazados</span>
+          <div class="text-3xl font-black text-rose-600 mt-1">{{ data.kpis.rejected_applications }}</div>
+        </div>
       </div>
 
       <!-- Embudo de Candidaturas -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <h2 class="text-base font-bold text-slate-900 mb-4">Embudo de Candidaturas por Etapa</h2>
-        
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-            <span class="text-xs text-slate-500 font-semibold uppercase">Nuevos</span>
-            <div class="text-2xl font-bold text-slate-800 mt-1">{{ data.stage_distribution.new }}</div>
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div class="xl:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <h2 class="text-base font-bold text-slate-900 mb-4">Embudo de Candidaturas por Etapa</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <span class="text-xs text-slate-500 font-semibold uppercase">Nuevos</span>
+              <div class="text-2xl font-bold text-slate-800 mt-1">{{ data.stage_distribution.new }}</div>
+            </div>
+            <div class="bg-sky-50/60 p-4 rounded-xl border border-sky-200">
+              <span class="text-xs text-sky-700 font-semibold uppercase">Screening</span>
+              <div class="text-2xl font-bold text-sky-800 mt-1">{{ data.stage_distribution.screening }}</div>
+            </div>
+            <div class="bg-indigo-50/60 p-4 rounded-xl border border-indigo-200">
+              <span class="text-xs text-indigo-700 font-semibold uppercase">Técnica</span>
+              <div class="text-2xl font-bold text-indigo-800 mt-1">{{ data.stage_distribution.technical_interview }}</div>
+            </div>
+            <div class="bg-purple-50/60 p-4 rounded-xl border border-purple-200">
+              <span class="text-xs text-purple-700 font-semibold uppercase">Final</span>
+              <div class="text-2xl font-bold text-purple-800 mt-1">{{ data.stage_distribution.final_interview }}</div>
+            </div>
+            <div class="bg-amber-50/60 p-4 rounded-xl border border-amber-200">
+              <span class="text-xs text-amber-700 font-semibold uppercase">Oferta</span>
+              <div class="text-2xl font-bold text-amber-800 mt-1">{{ data.stage_distribution.offer }}</div>
+            </div>
+            <div class="bg-emerald-50/60 p-4 rounded-xl border border-emerald-200">
+              <span class="text-xs text-emerald-700 font-semibold uppercase">Contratados</span>
+              <div class="text-2xl font-bold text-emerald-800 mt-1">{{ data.stage_distribution.hired }}</div>
+            </div>
+            <div class="bg-rose-50/60 p-4 rounded-xl border border-rose-200">
+              <span class="text-xs text-rose-700 font-semibold uppercase">Rechazados</span>
+              <div class="text-2xl font-bold text-rose-800 mt-1">{{ data.stage_distribution.rejected }}</div>
+            </div>
           </div>
+        </div>
 
-          <div class="bg-sky-50/60 p-4 rounded-xl border border-sky-200">
-            <span class="text-xs text-sky-700 font-semibold uppercase">Screening</span>
-            <div class="text-2xl font-bold text-sky-800 mt-1">{{ data.stage_distribution.screening }}</div>
-          </div>
-
-          <div class="bg-indigo-50/60 p-4 rounded-xl border border-indigo-200">
-            <span class="text-xs text-indigo-700 font-semibold uppercase">Técnica</span>
-            <div class="text-2xl font-bold text-indigo-800 mt-1">{{ data.stage_distribution.technical_interview }}</div>
-          </div>
-
-          <div class="bg-purple-50/60 p-4 rounded-xl border border-purple-200">
-            <span class="text-xs text-purple-700 font-semibold uppercase">Final</span>
-            <div class="text-2xl font-bold text-purple-800 mt-1">{{ data.stage_distribution.final_interview }}</div>
-          </div>
-
-          <div class="bg-emerald-50/60 p-4 rounded-xl border border-emerald-200">
-            <span class="text-xs text-emerald-700 font-semibold uppercase">Oferta / Contratado</span>
-            <div class="text-2xl font-bold text-emerald-800 mt-1">{{ data.stage_distribution.offer + data.stage_distribution.hired }}</div>
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <h2 class="text-base font-bold text-slate-900 mb-4">Estado de Postulaciones</h2>
+          <div class="space-y-3 text-sm">
+            <div class="flex justify-between"><span class="text-slate-500">Activas</span><span class="font-bold">{{ data.status_distribution.active }}</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Contratadas</span><span class="font-bold text-emerald-700">{{ data.status_distribution.hired }}</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Rechazadas</span><span class="font-bold text-rose-600">{{ data.status_distribution.rejected }}</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Retiradas</span><span class="font-bold">{{ data.status_distribution.withdrawn }}</span></div>
           </div>
         </div>
       </div>

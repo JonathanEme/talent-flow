@@ -131,9 +131,10 @@ return [
         'PositionIndexQuerySchema' => [
             'type' => 'object',
             'properties' => [
+                'company_id' => $integer(),
                 'status' => $enum(DomainValues::POSITION_STATUSES),
                 'seniority' => $enum(DomainValues::SENIORITIES),
-                'search' => $string(['maxLength' => 255]),
+                'search' => $string(['maxLength' => 150]),
             ],
         ],
 
@@ -160,9 +161,9 @@ return [
         'CandidateIndexQuerySchema' => [
             'type' => 'object',
             'properties' => [
-                'search' => $string(['maxLength' => 255]),
-                'skill' => $string(['maxLength' => 255]),
-                'location' => $string(['maxLength' => 255]),
+                'search' => $string(['maxLength' => 150]),
+                'skill' => $string(['maxLength' => 100]),
+                'location' => $string(['maxLength' => 150]),
             ],
         ],
 
@@ -184,8 +185,11 @@ return [
             'type' => 'object',
             'properties' => [
                 'position_id' => $integer(),
+                'candidate_id' => $integer(),
                 'stage' => $enum(ApplicationStage::values()),
                 'status' => $enum(ApplicationStatus::values()),
+                'from' => $date(),
+                'to' => $date(),
             ],
         ],
 
@@ -229,6 +233,7 @@ return [
                 'application_id' => $integer(),
                 'type' => $enum(DomainValues::INTERVIEW_TYPES),
                 'status' => $enum(DomainValues::INTERVIEW_STATUSES),
+                'scheduled_date' => $date(),
                 'from' => $date(),
                 'to' => $date(),
             ],
@@ -568,23 +573,45 @@ return [
 
         'DashboardKpisSchema' => [
             'type' => 'object',
-            'required' => ['active_positions', 'total_candidates', 'active_applications', 'scheduled_interviews', 'open_offers'],
+            'required' => ['open_positions', 'total_candidates', 'active_applications', 'upcoming_interviews'],
             'properties' => [
-                'active_positions' => $integer(),
+                'open_positions' => $integer(),
                 'total_candidates' => $integer(),
                 'active_applications' => $integer(),
-                'scheduled_interviews' => $integer(),
-                'open_offers' => $integer(),
+                'upcoming_interviews' => $integer(),
+                'hired_applications' => $integer(),
+                'rejected_applications' => $integer(),
             ],
         ],
 
-        'StageDistributionSchema' => [
+        'DashboardStageDistributionSchema' => [
             'type' => 'object',
-            'required' => ['stage', 'label', 'total'],
             'properties' => [
-                'stage' => $enum(ApplicationStage::values()),
-                'label' => $string(),
-                'total' => $integer(),
+                'new' => $integer(),
+                'screening' => $integer(),
+                'technical_interview' => $integer(),
+                'final_interview' => $integer(),
+                'offer' => $integer(),
+                'hired' => $integer(),
+                'rejected' => $integer(),
+            ],
+        ],
+
+        'DashboardStatusDistributionSchema' => [
+            'type' => 'object',
+            'properties' => [
+                'active' => $integer(),
+                'hired' => $integer(),
+                'rejected' => $integer(),
+                'withdrawn' => $integer(),
+            ],
+        ],
+
+        'DashboardIndexQuerySchema' => [
+            'type' => 'object',
+            'properties' => [
+                'from' => $date(),
+                'to' => $date(),
             ],
         ],
 
@@ -594,12 +621,13 @@ return [
             'properties' => [
                 'data' => [
                     'type' => 'object',
-                    'required' => ['kpis', 'stage_distribution', 'top_skills', 'recent_applications'],
+                    'required' => ['kpis', 'stage_distribution', 'status_distribution', 'upcoming_interviews', 'recent_positions'],
                     'properties' => [
                         'kpis' => $ref('DashboardKpisSchema'),
-                        'stage_distribution' => $arrayOf('StageDistributionSchema'),
-                        'top_skills' => $arrayOf('SkillResourceSchema'),
-                        'recent_applications' => $arrayOf('ApplicationResourceSchema'),
+                        'stage_distribution' => $ref('DashboardStageDistributionSchema'),
+                        'status_distribution' => $ref('DashboardStatusDistributionSchema'),
+                        'upcoming_interviews' => $arrayOf('InterviewResourceSchema'),
+                        'recent_positions' => $arrayOf('PositionResourceSchema'),
                     ],
                 ],
             ],
@@ -802,6 +830,7 @@ return [
             'not_found' => true,
         ],
         'get /dashboard' => [
+            'query' => 'DashboardIndexQuerySchema',
             'response' => 'DashboardSchema',
         ],
         'get /companies' => [

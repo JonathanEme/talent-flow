@@ -15,6 +15,8 @@ class CandidateIndexRequest extends FormRequest
     {
         return [
             'search' => ['nullable', 'string', 'max:150'],
+            'skill' => ['nullable', 'string', 'max:100'],
+            'location' => ['nullable', 'string', 'max:150'],
         ];
     }
 }

@@ -1,26 +1,39 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, reactive } from 'vue';
 import { usePaginatedList } from '../composables/usePaginatedList';
 import PaginationControls from '../components/PaginationControls.vue';
 import StatePanel from '../components/StatePanel.vue';
 import type { Position } from '../types/ats';
-import { Building2, MapPin, DollarSign, ChevronRight } from 'lucide-vue-next';
+import { Building2, MapPin, DollarSign, ChevronRight, Search } from 'lucide-vue-next';
+
+const filters = reactive({ search: '', status: '', seniority: '' });
+const listParams = () => {
+  const params: Record<string, string> = {};
+  if (filters.search) params.search = filters.search;
+  if (filters.status) params.status = filters.status;
+  if (filters.seniority) params.seniority = filters.seniority;
+  return params;
+};
 
 const {
   items: positions,
   meta,
   links,
+  page,
   loading,
   error,
   load,
   goToPage,
-} = usePaginatedList<Position>('/positions');
+} = usePaginatedList<Position>('/positions', listParams);
 
 const modalityLabels: Record<string, string> = {
   remote: 'Remoto',
   hybrid: 'Híbrido',
   on_site: 'Presencial',
 };
+
+const applyFilters = async () => { page.value = 1; await load(); };
+const clearFilters = async () => { filters.search = ''; filters.status = ''; filters.seniority = ''; await applyFilters(); };
 
 onMounted(load);
 </script>
@@ -38,6 +51,25 @@ onMounted(load);
       >
         + Nueva Posición
       </router-link>
+    </div>
+
+    <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
+      <label class="md:col-span-2 flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2">
+        <Search :size="16" class="text-slate-400" />
+        <input v-model="filters.search" @keyup.enter="applyFilters" type="search" aria-label="Buscar posición" placeholder="Buscar por título, descripción o ubicación" class="bg-transparent outline-none text-sm w-full" />
+      </label>
+      <select v-model="filters.status" aria-label="Filtrar por estado" class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm">
+        <option value="">Todos los estados</option>
+        <option value="draft">Borrador</option><option value="open">Abierta</option><option value="paused">Pausada</option><option value="closed">Cerrada</option>
+      </select>
+      <div class="flex gap-2">
+        <select v-model="filters.seniority" aria-label="Filtrar por seniority" class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm w-full">
+          <option value="">Toda seniority</option>
+          <option value="JR">JR</option><option value="SSR">SSR</option><option value="SR">SR</option><option value="LEAD">LEAD</option>
+        </select>
+        <button type="button" @click="applyFilters" class="px-3 py-2 rounded-lg bg-sky-600 text-white text-sm">Filtrar</button>
+        <button type="button" @click="clearFilters" class="px-3 py-2 rounded-lg bg-slate-800 text-sm">Limpiar</button>
+      </div>
     </div>
 
     <StatePanel

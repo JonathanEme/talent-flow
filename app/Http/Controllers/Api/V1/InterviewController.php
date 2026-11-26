@@ -37,8 +37,20 @@ class InterviewController extends Controller
             $query->where('status', $validated['status']);
         }
 
+        if (isset($validated['type'])) {
+            $query->where('type', $validated['type']);
+        }
+
         if (isset($validated['scheduled_date'])) {
             $query->whereDate('scheduled_at', $validated['scheduled_date']);
+        }
+
+        if (isset($validated['from'])) {
+            $query->whereDate('scheduled_at', '>=', $validated['from']);
+        }
+
+        if (isset($validated['to'])) {
+            $query->whereDate('scheduled_at', '<=', $validated['to']);
         }
 
         return $this->paginatedResponse(InterviewResource::collection($query->orderBy('scheduled_at', 'asc')->paginate(20)));

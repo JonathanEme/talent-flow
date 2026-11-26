@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { reactive, ref, onMounted } from 'vue';
 import { apiClient } from '../api/client';
 import { errorMessage, unwrapItem, unwrapPaginated } from '../api/pagination';
 import { usePaginatedList } from '../composables/usePaginatedList';
@@ -10,9 +10,15 @@ import type { Candidate, Skill } from '../types/ats';
 import { Users, UserPlus, Search, Mail, Phone, MapPin, DollarSign, X } from 'lucide-vue-next';
 
 const availableSkills = ref<Skill[]>([]);
-const searchQuery = ref('');
+const filters = reactive({ search: '', skill: '', location: '' });
 
-const listParams = () => (searchQuery.value ? { search: searchQuery.value } : {});
+const listParams = () => {
+  const params: Record<string, string> = {};
+  if (filters.search) params.search = filters.search;
+  if (filters.skill) params.skill = filters.skill;
+  if (filters.location) params.location = filters.location;
+  return params;
+};
 const {
   items: candidates,
   meta,
@@ -51,6 +57,7 @@ const handleSearch = async () => {
   page.value = 1;
   await load();
 };
+const clearFilters = async () => { filters.search = ''; filters.skill = ''; filters.location = ''; await handleSearch(); };
 
 const addSkillField = () => {
   form.value.selected_skills.push({
@@ -136,16 +143,17 @@ const saveCandidate = async () => {
     </div>
 
     <!-- Buscador -->
-    <div class="mb-6 flex items-center gap-3 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 max-w-md">
-      <Search :size="18" class="text-slate-400" />
-      <input
-        v-model="searchQuery"
-        @keyup.enter="handleSearch"
-        type="search"
-        aria-label="Buscar candidatos por nombre o email"
-        placeholder="Buscar por nombre o email..."
-        class="bg-transparent border-none outline-none text-sm text-white w-full placeholder-slate-500"
-      />
+    <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
+      <label class="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 md:col-span-2">
+        <Search :size="18" class="text-slate-400" />
+        <input v-model="filters.search" @keyup.enter="handleSearch" type="search" aria-label="Buscar candidatos" placeholder="Nombre o email..." class="bg-transparent border-none outline-none text-sm text-white w-full placeholder-slate-500" />
+      </label>
+      <input v-model="filters.skill" @keyup.enter="handleSearch" type="search" aria-label="Filtrar por skill" placeholder="Skill" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm" />
+      <div class="flex gap-2">
+        <input v-model="filters.location" @keyup.enter="handleSearch" type="search" aria-label="Filtrar por ubicación" placeholder="Ubicación" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm w-full" />
+        <button type="button" @click="handleSearch" class="px-3 rounded-lg bg-sky-600 text-sm">Filtrar</button>
+        <button type="button" @click="clearFilters" class="px-3 rounded-lg bg-slate-800 text-sm">Limpiar</button>
+      </div>
     </div>
 
     <StatePanel

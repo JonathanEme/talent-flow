@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { reactive, ref, onMounted } from 'vue';
 import { apiClient } from '../api/client';
 import { errorMessage } from '../api/pagination';
 import { usePaginatedList } from '../composables/usePaginatedList';
@@ -10,15 +10,26 @@ import InterviewFormModal from '../components/InterviewFormModal.vue';
 import type { Application, Interview } from '../types/ats';
 import { Calendar, CalendarPlus, Video, Star, CheckCircle, X } from 'lucide-vue-next';
 
+const filters = reactive({ status: '', type: '', from: '', to: '' });
+const listParams = () => {
+  const params: Record<string, string> = {};
+  if (filters.status) params.status = filters.status;
+  if (filters.type) params.type = filters.type;
+  if (filters.from) params.from = filters.from;
+  if (filters.to) params.to = filters.to;
+  return params;
+};
+
 const {
   items: interviews,
   meta,
   links,
+  page,
   loading,
   error,
   load,
   goToPage,
-} = usePaginatedList<Interview>('/interviews');
+} = usePaginatedList<Interview>('/interviews', listParams);
 
 const { items: applications, load: loadApplications } = usePaginatedList<Application>('/applications');
 const showCreateModal = ref(false);
@@ -36,6 +47,9 @@ const feedbackForm = ref({
 
 const dateFormatter = new Intl.DateTimeFormat('es', { dateStyle: 'medium', timeStyle: 'short' });
 const formatDate = (value: string) => dateFormatter.format(new Date(value));
+
+const applyFilters = async () => { page.value = 1; await load(); };
+const clearFilters = async () => { filters.status = ''; filters.type = ''; filters.from = ''; filters.to = ''; await applyFilters(); };
 
 onMounted(async () => {
   await Promise.all([load(), loadApplications()]);
@@ -94,6 +108,14 @@ const submitFeedback = async () => {
       >
         <CalendarPlus :size="16" /> Nueva entrevista
       </button>
+    </div>
+
+    <div class="mb-6 grid grid-cols-1 md:grid-cols-5 gap-3">
+      <select v-model="filters.status" aria-label="Estado entrevista" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm"><option value="">Todos los estados</option><option value="scheduled">Programada</option><option value="completed">Completada</option><option value="canceled">Cancelada</option><option value="no_show">No asistió</option></select>
+      <select v-model="filters.type" aria-label="Tipo entrevista" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm"><option value="">Todos los tipos</option><option value="screening">Screening</option><option value="hr">HR</option><option value="technical">Técnica</option><option value="client">Cliente</option><option value="final">Final</option></select>
+      <input v-model="filters.from" type="date" aria-label="Desde" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+      <input v-model="filters.to" type="date" aria-label="Hasta" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+      <div class="flex gap-2"><button type="button" @click="applyFilters" class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm">Filtrar</button><button type="button" @click="clearFilters" class="px-3 py-2 rounded-lg bg-slate-100 text-sm">Limpiar</button></div>
     </div>
 
     <StatePanel

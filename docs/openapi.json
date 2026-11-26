@@ -90,6 +90,9 @@
                     "position_id": {
                         "type": "integer"
                     },
+                    "candidate_id": {
+                        "type": "integer"
+                    },
                     "stage": {
                         "type": "string",
                         "enum": [
@@ -109,6 +112,14 @@
                             "hired",
                             "rejected"
                         ]
+                    },
+                    "from": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "to": {
+                        "type": "string",
+                        "format": "date"
                     }
                 }
             },
@@ -237,15 +248,15 @@
                 "properties": {
                     "search": {
                         "type": "string",
-                        "maxLength": 255
+                        "maxLength": 150
                     },
                     "skill": {
                         "type": "string",
-                        "maxLength": 255
+                        "maxLength": 100
                     },
                     "location": {
                         "type": "string",
-                        "maxLength": 255
+                        "maxLength": 150
                     }
                 }
             },
@@ -394,17 +405,29 @@
                     }
                 }
             },
+            "DashboardIndexQuerySchema": {
+                "type": "object",
+                "properties": {
+                    "from": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "to": {
+                        "type": "string",
+                        "format": "date"
+                    }
+                }
+            },
             "DashboardKpisSchema": {
                 "type": "object",
                 "required": [
-                    "active_positions",
+                    "open_positions",
                     "total_candidates",
                     "active_applications",
-                    "scheduled_interviews",
-                    "open_offers"
+                    "upcoming_interviews"
                 ],
                 "properties": {
-                    "active_positions": {
+                    "open_positions": {
                         "type": "integer"
                     },
                     "total_candidates": {
@@ -413,10 +436,13 @@
                     "active_applications": {
                         "type": "integer"
                     },
-                    "scheduled_interviews": {
+                    "upcoming_interviews": {
                         "type": "integer"
                     },
-                    "open_offers": {
+                    "hired_applications": {
+                        "type": "integer"
+                    },
+                    "rejected_applications": {
                         "type": "integer"
                     }
                 }
@@ -432,32 +458,76 @@
                         "required": [
                             "kpis",
                             "stage_distribution",
-                            "top_skills",
-                            "recent_applications"
+                            "status_distribution",
+                            "upcoming_interviews",
+                            "recent_positions"
                         ],
                         "properties": {
                             "kpis": {
                                 "$ref": "#/components/schemas/DashboardKpisSchema"
                             },
                             "stage_distribution": {
+                                "$ref": "#/components/schemas/DashboardStageDistributionSchema"
+                            },
+                            "status_distribution": {
+                                "$ref": "#/components/schemas/DashboardStatusDistributionSchema"
+                            },
+                            "upcoming_interviews": {
                                 "type": "array",
                                 "items": {
-                                    "$ref": "#/components/schemas/StageDistributionSchema"
+                                    "$ref": "#/components/schemas/InterviewResourceSchema"
                                 }
                             },
-                            "top_skills": {
+                            "recent_positions": {
                                 "type": "array",
                                 "items": {
-                                    "$ref": "#/components/schemas/SkillResourceSchema"
-                                }
-                            },
-                            "recent_applications": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/ApplicationResourceSchema"
+                                    "$ref": "#/components/schemas/PositionResourceSchema"
                                 }
                             }
                         }
+                    }
+                }
+            },
+            "DashboardStageDistributionSchema": {
+                "type": "object",
+                "properties": {
+                    "new": {
+                        "type": "integer"
+                    },
+                    "screening": {
+                        "type": "integer"
+                    },
+                    "technical_interview": {
+                        "type": "integer"
+                    },
+                    "final_interview": {
+                        "type": "integer"
+                    },
+                    "offer": {
+                        "type": "integer"
+                    },
+                    "hired": {
+                        "type": "integer"
+                    },
+                    "rejected": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "DashboardStatusDistributionSchema": {
+                "type": "object",
+                "properties": {
+                    "active": {
+                        "type": "integer"
+                    },
+                    "hired": {
+                        "type": "integer"
+                    },
+                    "rejected": {
+                        "type": "integer"
+                    },
+                    "withdrawn": {
+                        "type": "integer"
                     }
                 }
             },
@@ -663,6 +733,10 @@
                             "canceled",
                             "no_show"
                         ]
+                    },
+                    "scheduled_date": {
+                        "type": "string",
+                        "format": "date"
                     },
                     "from": {
                         "type": "string",
@@ -1783,6 +1857,9 @@
             "PositionIndexQuerySchema": {
                 "type": "object",
                 "properties": {
+                    "company_id": {
+                        "type": "integer"
+                    },
                     "status": {
                         "type": "string",
                         "enum": [
@@ -1807,7 +1884,7 @@
                     },
                     "search": {
                         "type": "string",
-                        "maxLength": 255
+                        "maxLength": 150
                     }
                 }
             },
@@ -2173,34 +2250,6 @@
                             "language",
                             "tool"
                         ]
-                    }
-                }
-            },
-            "StageDistributionSchema": {
-                "type": "object",
-                "required": [
-                    "stage",
-                    "label",
-                    "total"
-                ],
-                "properties": {
-                    "stage": {
-                        "type": "string",
-                        "enum": [
-                            "new",
-                            "screening",
-                            "technical_interview",
-                            "final_interview",
-                            "offer",
-                            "hired",
-                            "rejected"
-                        ]
-                    },
-                    "label": {
-                        "type": "string"
-                    },
-                    "total": {
-                        "type": "integer"
                     }
                 }
             },
@@ -2613,6 +2662,14 @@
                         }
                     },
                     {
+                        "name": "candidate_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
                         "name": "stage",
                         "in": "query",
                         "required": false,
@@ -2640,6 +2697,24 @@
                                 "hired",
                                 "rejected"
                             ]
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
                         }
                     }
                 ],
@@ -3552,7 +3627,7 @@
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "maxLength": 255
+                            "maxLength": 150
                         }
                     },
                     {
@@ -3561,7 +3636,7 @@
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "maxLength": 255
+                            "maxLength": 100
                         }
                     },
                     {
@@ -3570,7 +3645,7 @@
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "maxLength": 255
+                            "maxLength": 150
                         }
                     }
                 ],
@@ -4404,7 +4479,26 @@
                 "summary": "Obtener estadísticas — Dashboard",
                 "description": "Operación de la API v1 de TalentFlow. Requiere token Bearer de Sanctum.",
                 "operationId": "get-dashboard",
-                "parameters": [],
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Operación completada correctamente.",
@@ -4534,6 +4628,15 @@
                                 "canceled",
                                 "no_show"
                             ]
+                        }
+                    },
+                    {
+                        "name": "scheduled_date",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
                         }
                     },
                     {
@@ -6215,6 +6318,14 @@
                 "operationId": "get-positions",
                 "parameters": [
                     {
+                        "name": "company_id",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
                         "name": "status",
                         "in": "query",
                         "required": false,
@@ -6252,7 +6363,7 @@
                         "required": false,
                         "schema": {
                             "type": "string",
-                            "maxLength": 255
+                            "maxLength": 150
                         }
                     }
                 ],

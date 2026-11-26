@@ -40,6 +40,18 @@ class ApplicationController extends Controller
             $query->where('stage', $validated['stage']);
         }
 
+        if (isset($validated['candidate_id'])) {
+            $query->where('candidate_id', $validated['candidate_id']);
+        }
+
+        if (isset($validated['from'])) {
+            $query->whereDate('applied_at', '>=', $validated['from']);
+        }
+
+        if (isset($validated['to'])) {
+            $query->whereDate('applied_at', '<=', $validated['to']);
+        }
+
         return $this->paginatedResponse(ApplicationResource::collection($query->latest()->paginate(20)));
     }
 

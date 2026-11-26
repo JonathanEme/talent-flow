@@ -25,6 +25,17 @@ class CandidateController extends Controller
             });
         }
 
+        if (isset($validated['location'])) {
+            $query->where('location', 'like', '%'.$validated['location'].'%');
+        }
+
+        if (isset($validated['skill'])) {
+            $skill = $validated['skill'];
+            $query->whereHas('skills', function ($query) use ($skill): void {
+                $query->where('name', 'like', "%{$skill}%");
+            });
+        }
+
         return $this->paginatedResponse(CandidateResource::collection($query->latest()->paginate(15)));
     }
 

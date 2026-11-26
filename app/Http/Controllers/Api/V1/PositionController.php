@@ -24,6 +24,19 @@ class PositionController extends Controller
             $query->where('status', $validated['status']);
         }
 
+        if (isset($validated['seniority'])) {
+            $query->where('seniority', $validated['seniority']);
+        }
+
+        if (isset($validated['search'])) {
+            $search = $validated['search'];
+            $query->where(function ($query) use ($search): void {
+                $query->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('location', 'like', "%{$search}%");
+            });
+        }
+
         return $this->paginatedResponse(PositionResource::collection($query->latest()->paginate(15)));
     }
 

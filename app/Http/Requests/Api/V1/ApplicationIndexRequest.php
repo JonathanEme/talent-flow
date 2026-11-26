@@ -20,6 +20,9 @@ class ApplicationIndexRequest extends FormRequest
             'position_id' => ['nullable', 'integer', 'exists:positions,id'],
             'status' => ['nullable', 'string', Rule::in(ApplicationStatus::values())],
             'stage' => ['nullable', 'string', Rule::in(ApplicationStage::values())],
+            'candidate_id' => ['nullable', 'integer', 'exists:candidates,id'],
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
         ];
     }
 }

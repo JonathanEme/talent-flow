@@ -40,7 +40,10 @@ class DashboardAndSyncQualityTest extends TestCase
             ->assertJsonPath('kpis.total_candidates', 1)
             ->assertJsonPath('kpis.active_applications', 1)
             ->assertJsonPath('kpis.upcoming_interviews', 1)
+            ->assertJsonPath('kpis.hired_applications', 0)
+            ->assertJsonPath('kpis.rejected_applications', 0)
             ->assertJsonPath('stage_distribution.new', 1)
+            ->assertJsonPath('status_distribution.active', 1)
             ->assertJsonFragment(['title' => 'Vacante propia'])
             ->assertJsonMissing(['title' => 'Vacante ajena'])
             ->assertJsonMissing(['notes' => 'entrevista-ajena']);

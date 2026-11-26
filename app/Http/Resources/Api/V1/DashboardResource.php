@@ -12,6 +12,7 @@ class DashboardResource extends JsonResource
         return [
             'kpis' => $this->resource['kpis'],
             'stage_distribution' => $this->resource['stage_distribution'],
+            'status_distribution' => $this->resource['status_distribution'],
             'upcoming_interviews' => InterviewResource::collection($this->resource['upcoming_interviews']),
             'recent_positions' => PositionResource::collection($this->resource['recent_positions']),
         ];

@@ -123,14 +123,19 @@ export interface CandidateRecommendation {
   application_stage: string | null;
 }
 
+export interface DashboardKpis {
+  open_positions: number;
+  total_candidates: number;
+  active_applications: number;
+  upcoming_interviews: number;
+  hired_applications: number;
+  rejected_applications: number;
+}
+
 export interface DashboardData {
-  kpis: {
-    open_positions: number;
-    total_candidates: number;
-    active_applications: number;
-    upcoming_interviews: number;
-  };
+  kpis: DashboardKpis;
   stage_distribution: Record<string, number>;
+  status_distribution: Record<string, number>;
   upcoming_interviews: Interview[];
   recent_positions: Position[];
 }
