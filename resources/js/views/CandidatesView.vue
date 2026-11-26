@@ -131,7 +131,7 @@ const saveCandidate = async () => {
         <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
           <Users class="text-sky-400" :size="24" /> Base de Candidatos
         </h1>
-        <p class="text-slate-400 text-sm">Directorio global de talento y habilidades tÃ©cnicas.</p>
+        <p class="text-slate-400 text-sm">Directorio global de talento y habilidades técnicas.</p>
       </div>
 
       <button 
@@ -150,7 +150,7 @@ const saveCandidate = async () => {
       </label>
       <input v-model="filters.skill" @keyup.enter="handleSearch" type="search" aria-label="Filtrar por skill" placeholder="Skill" class="bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm focus:ring-2 focus:ring-sky-500" />
       <div class="flex gap-2">
-        <input v-model="filters.location" @keyup.enter="handleSearch" type="search" aria-label="Filtrar por ubicaciÃ³n" placeholder="UbicaciÃ³n" class="bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm w-full focus:ring-2 focus:ring-sky-500" />
+        <input v-model="filters.location" @keyup.enter="handleSearch" type="search" aria-label="Filtrar por ubicación" placeholder="Ubicación" class="bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm w-full focus:ring-2 focus:ring-sky-500" />
         <button type="button" @click="handleSearch" class="px-3 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium">Filtrar</button>
         <button type="button" @click="clearFilters" class="px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium">Limpiar</button>
       </div>
@@ -162,7 +162,7 @@ const saveCandidate = async () => {
       :error="error"
       :empty="candidates.length === 0"
       loading-label="Cargando base de datos..."
-      empty-label="No hay candidatos que coincidan con la bÃºsqueda."
+      empty-label="No hay candidatos que coincidan con la búsqueda."
       @retry="load"
     />
 
@@ -197,7 +197,7 @@ const saveCandidate = async () => {
           <span v-if="cand.salary_expectation" class="text-emerald-400 font-medium flex items-center">
             <DollarSign :size="13" /> ${{ cand.salary_expectation }}
           </span>
-          <span v-else class="text-slate-500">Sin pretensiÃ³n fijada</span>
+          <span v-else class="text-slate-500">Sin pretensión fijada</span>
         </div>
       </div>
       </div>
@@ -233,18 +233,18 @@ const saveCandidate = async () => {
               <input type="email" v-model="form.email" required class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-slate-700 outline-none focus:ring-2 focus:ring-sky-500" />
             </div>
             <div>
-              <label class="block text-slate-700 font-medium mb-1">TelÃ©fono</label>
+              <label class="block text-slate-700 font-medium mb-1">Teléfono</label>
               <input type="text" v-model="form.phone" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-slate-700 outline-none focus:ring-2 focus:ring-sky-500" />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-slate-700 font-medium mb-1">UbicaciÃ³n</label>
-              <input type="text" v-model="form.location" placeholder="Ciudad, PaÃ­s" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-slate-700 outline-none focus:ring-2 focus:ring-sky-500" />
+              <label class="block text-slate-700 font-medium mb-1">Ubicación</label>
+              <input type="text" v-model="form.location" placeholder="Ciudad, País" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-slate-700 outline-none focus:ring-2 focus:ring-sky-500" />
             </div>
             <div>
-              <label class="block text-slate-700 font-medium mb-1">PretensiÃ³n Salarial (USD)</label>
+              <label class="block text-slate-700 font-medium mb-1">Pretensión Salarial (USD)</label>
               <input type="number" v-model="form.salary_expectation" placeholder="2000" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-slate-700 outline-none focus:ring-2 focus:ring-sky-500" />
             </div>
           </div>
@@ -254,10 +254,10 @@ const saveCandidate = async () => {
             <textarea v-model="form.summary" rows="2" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-slate-700 outline-none focus:ring-2 focus:ring-sky-500"></textarea>
           </div>
 
-          <!-- Skills DinÃ¡micas -->
+          <!-- Skills Dinámicas -->
           <div class="pt-2 border-t border-slate-200">
             <div class="flex justify-between items-center mb-2">
-              <span class="font-bold text-slate-300">Habilidades TÃ©cnicas</span>
+              <span class="font-bold text-slate-300">Habilidades Técnicas</span>
               <button type="button" @click="addSkillField" class="text-sky-400 hover:text-sky-300 text-xs font-semibold">+ Agregar Skill</button>
             </div>
 
@@ -266,7 +266,7 @@ const saveCandidate = async () => {
                 <option :value="0" disabled>Selecciona habilidad</option>
                 <option v-for="s in availableSkills" :key="s.id" :value="s.id">{{ s.name }}</option>
               </select>
-              <input type="number" v-model="sk.years_experience" min="1" max="20" placeholder="AÃ±os" class="w-16 bg-white border border-slate-300 text-slate-700 rounded p-1.5 text-center" />
+              <input type="number" v-model="sk.years_experience" min="1" max="20" placeholder="Años" class="w-16 bg-white border border-slate-300 text-slate-700 rounded p-1.5 text-center" />
               <button type="button" @click="removeSkillField(idx)" class="text-rose-400 hover:text-rose-300 px-1">
                 <X :size="15" />
               </button>

@@ -67,7 +67,7 @@ const saveCompany = async () => {
         <h1 class="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
           <Building2 class="text-indigo-600" :size="24" /> Empresas / Clientes
         </h1>
-        <p class="text-slate-500 text-sm">Gestiona cuentas corporativas y clientes con bÃºsquedas activas.</p>
+        <p class="text-slate-500 text-sm">Gestiona cuentas corporativas y clientes con búsquedas activas.</p>
       </div>
 
       <button 
@@ -84,7 +84,7 @@ const saveCompany = async () => {
       :error="error"
       :empty="companies.length === 0"
       loading-label="Cargando empresas..."
-      empty-label="No hay empresas registradas aÃºn. Haz clic en â€œNueva Empresaâ€ para agregar la primera."
+      empty-label='No hay empresas registradas. Haz clic en "Nueva Empresa" para agregar la primera.'
       @retry="load"
     />
 
@@ -133,13 +133,13 @@ const saveCompany = async () => {
 
         <form @submit.prevent="saveCompany" class="space-y-4 text-xs">
           <div>
-            <label class="block text-slate-700 font-semibold mb-1">RazÃ³n Social / Nombre</label>
+            <label class="block text-slate-700 font-semibold mb-1">Razón Social / Nombre</label>
             <input type="text" v-model="form.name" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-slate-700 font-semibold mb-1">IdentificaciÃ³n Fiscal</label>
+              <label class="block text-slate-700 font-semibold mb-1">Identificación Fiscal</label>
               <input type="text" v-model="form.tax_id" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
             <div>
@@ -154,13 +154,13 @@ const saveCompany = async () => {
               <input type="email" v-model="form.email" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
             <div>
-              <label class="block text-slate-700 font-semibold mb-1">TelÃ©fono</label>
+              <label class="block text-slate-700 font-semibold mb-1">Teléfono</label>
               <input type="text" v-model="form.phone" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500" />
             </div>
           </div>
 
           <div>
-            <label class="block text-slate-700 font-semibold mb-1">DescripciÃ³n</label>
+            <label class="block text-slate-700 font-semibold mb-1">Descripción</label>
             <textarea v-model="form.description" rows="2" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
           </div>
 
