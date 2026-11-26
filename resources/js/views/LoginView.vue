@@ -19,7 +19,7 @@ const submit = async () => {
   } catch (err: any) {
     error.value = err.response?.data?.errors?.email?.[0]
       ?? err.response?.data?.message
-      ?? 'No se pudo iniciar sesión.';
+      ?? 'No se pudo iniciar sesiÃ³n.';
   } finally {
     loading.value = false;
   }
@@ -33,11 +33,11 @@ const submit = async () => {
       @submit.prevent="submit"
     >
       <div class="mb-6 text-center">
-        <div class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600 text-white">
+        <div class="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-600 text-slate-900">
           <LogIn :size="20" />
         </div>
         <h1 class="text-xl font-bold text-slate-900">Ingresar a TalentFlow</h1>
-        <p class="mt-1 text-sm text-slate-500">Usá tu cuenta de reclutador para continuar.</p>
+        <p class="mt-1 text-sm text-slate-500">UsÃ¡ tu cuenta de reclutador para continuar.</p>
       </div>
 
       <label class="mb-4 block">
@@ -52,7 +52,7 @@ const submit = async () => {
       </label>
 
       <label class="mb-5 block">
-        <span class="mb-1 block text-sm font-medium text-slate-700">Contraseña</span>
+        <span class="mb-1 block text-sm font-medium text-slate-700">ContraseÃ±a</span>
         <input
           v-model="password"
           type="password"
@@ -69,9 +69,9 @@ const submit = async () => {
       <button
         type="submit"
         :disabled="loading"
-        class="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:opacity-50"
+        class="w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-indigo-700 disabled:opacity-50"
       >
-        {{ loading ? 'Ingresando…' : 'Ingresar' }}
+        {{ loading ? 'Ingresandoâ€¦' : 'Ingresar' }}
       </button>
     </form>
   </div>

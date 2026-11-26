@@ -28,7 +28,7 @@ const {
 
 const modalityLabels: Record<string, string> = {
   remote: 'Remoto',
-  hybrid: 'Híbrido',
+  hybrid: 'HÃ­brido',
   on_site: 'Presencial',
 };
 
@@ -43,20 +43,20 @@ onMounted(load);
     <div class="flex justify-between items-center mb-6">
       <div>
         <h1 class="text-2xl font-bold tracking-tight">Posiciones Abiertas</h1>
-        <p class="text-slate-400 text-sm">Gestiona vacantes y matching de candidatos en tiempo real.</p>
+        <p class="text-slate-500 text-sm">Gestiona vacantes y matching de candidatos en tiempo real.</p>
       </div>
       <router-link
         to="/positions/create"
         class="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition"
       >
-        + Nueva Posición
+        + Nueva PosiciÃ³n
       </router-link>
     </div>
 
     <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-3">
       <label class="md:col-span-2 flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-sky-500">
         <Search :size="16" class="text-slate-400" />
-        <input v-model="filters.search" @keyup.enter="applyFilters" type="search" aria-label="Buscar posición" placeholder="Buscar por título, descripción o ubicación" class="bg-transparent outline-none text-sm w-full text-slate-700 placeholder:text-slate-400" />
+        <input v-model="filters.search" @keyup.enter="applyFilters" type="search" aria-label="Buscar posiciÃ³n" placeholder="Buscar por tÃ­tulo, descripciÃ³n o ubicaciÃ³n" class="bg-transparent outline-none text-sm w-full text-slate-700 placeholder:text-slate-400" />
       </label>
       <select v-model="filters.status" aria-label="Filtrar por estado" class="bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-700 shadow-sm focus:ring-2 focus:ring-sky-500">
         <option value="">Todos los estados</option>
@@ -87,32 +87,32 @@ onMounted(load);
         <div
           v-for="pos in positions"
           :key="pos.id"
-          class="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition"
+          class="bg-white border border-slate-200 rounded-xl p-5 hover:border-slate-300 transition shadow-sm"
         >
           <div class="flex justify-between items-start">
             <div>
               <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-400 mb-2">
-                {{ pos.seniority }} • {{ modalityLabels[pos.modality] ?? pos.modality }}
+                {{ pos.seniority }} â€¢ {{ modalityLabels[pos.modality] ?? pos.modality }}
               </span>
-              <h2 class="text-lg font-bold text-white">{{ pos.title }}</h2>
-              <p class="text-sm text-slate-400 flex items-center gap-1.5 mt-1">
+              <h2 class="text-lg font-bold text-slate-900">{{ pos.title }}</h2>
+              <p class="text-sm text-slate-500 flex items-center gap-1.5 mt-1">
                 <Building2 :size="14" /> {{ pos.company?.name }}
               </p>
             </div>
             <router-link
               :to="`/positions/${pos.id}`"
-              class="bg-slate-800 hover:bg-slate-700 p-2 rounded-lg text-slate-300 hover:text-white transition"
-              :aria-label="`Ver posición ${pos.title}`"
+              class="bg-slate-100 hover:bg-slate-200 p-2 rounded-lg text-slate-500 hover:text-slate-700 transition"
+              :aria-label="`Ver posiciÃ³n ${pos.title}`"
             >
               <ChevronRight :size="18" />
             </router-link>
           </div>
 
-          <div class="mt-4 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+          <div class="mt-4 pt-4 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
             <span class="flex items-center gap-1">
               <MapPin :size="13" />
               {{ modalityLabels[pos.modality] ?? pos.modality }}
-              <template v-if="pos.location"> · {{ pos.location }}</template>
+              <template v-if="pos.location"> Â· {{ pos.location }}</template>
             </span>
             <span v-if="pos.salary_min" class="flex items-center gap-1 text-emerald-400 font-medium">
               <DollarSign :size="13" /> ${{ pos.salary_min }} - ${{ pos.salary_max }}

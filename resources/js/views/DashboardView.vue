@@ -21,7 +21,7 @@ const loadDashboard = async () => {
     const response = await apiClient.get('/dashboard');
     data.value = response.data as DashboardData;
   } catch (caught) {
-    error.value = errorMessage(caught, 'No se pudieron cargar las métricas.');
+    error.value = errorMessage(caught, 'No se pudieron cargar las mÃ©tricas.');
     data.value = null;
   } finally {
     loading.value = false;
@@ -35,7 +35,7 @@ onMounted(loadDashboard);
   <div>
     <div class="mb-6">
       <h1 class="text-2xl font-bold tracking-tight text-slate-900">Dashboard de Reclutamiento</h1>
-      <p class="text-slate-500 text-sm">Resumen operativo, embudo de selección y próximas reuniones.</p>
+      <p class="text-slate-500 text-sm">Resumen operativo, embudo de selecciÃ³n y prÃ³ximas reuniones.</p>
     </div>
 
     <StatePanel
@@ -43,8 +43,8 @@ onMounted(loadDashboard);
       :loading="loading"
       :error="error"
       :empty="!loading && !error && !data"
-      loading-label="Cargando métricas..."
-      empty-label="No hay métricas disponibles."
+      loading-label="Cargando mÃ©tricas..."
+      empty-label="No hay mÃ©tricas disponibles."
       @retry="loadDashboard"
     />
 
@@ -73,7 +73,7 @@ onMounted(loadDashboard);
 
         <div class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-sm">
           <div>
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">En Selección Activa</span>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">En SelecciÃ³n Activa</span>
             <div class="text-3xl font-black text-slate-900 mt-1">{{ data.kpis.active_applications }}</div>
           </div>
           <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
@@ -83,7 +83,7 @@ onMounted(loadDashboard);
 
         <div class="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-sm">
           <div>
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Próx. Entrevistas</span>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">PrÃ³x. Entrevistas</span>
             <div class="text-3xl font-black text-emerald-600 mt-1">{{ data.kpis.upcoming_interviews }}</div>
           </div>
           <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -116,7 +116,7 @@ onMounted(loadDashboard);
               <div class="text-2xl font-bold text-sky-800 mt-1">{{ data.stage_distribution.screening }}</div>
             </div>
             <div class="bg-indigo-50/60 p-4 rounded-xl border border-indigo-200">
-              <span class="text-xs text-indigo-700 font-semibold uppercase">Técnica</span>
+              <span class="text-xs text-indigo-700 font-semibold uppercase">TÃ©cnica</span>
               <div class="text-2xl font-bold text-indigo-800 mt-1">{{ data.stage_distribution.technical_interview }}</div>
             </div>
             <div class="bg-purple-50/60 p-4 rounded-xl border border-purple-200">
@@ -151,7 +151,7 @@ onMounted(loadDashboard);
 
       <!-- Bloque Doble -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Próximas Entrevistas -->
+        <!-- PrÃ³ximas Entrevistas -->
         <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -161,7 +161,7 @@ onMounted(loadDashboard);
           </div>
 
           <div v-if="data.upcoming_interviews.length === 0" class="text-xs text-slate-400 py-6 text-center">
-            No hay entrevistas programadas próximamente.
+            No hay entrevistas programadas prÃ³ximamente.
           </div>
 
           <div v-else class="space-y-3">
@@ -192,11 +192,11 @@ onMounted(loadDashboard);
           </div>
         </div>
 
-        <!-- Búsquedas Activas -->
+        <!-- BÃºsquedas Activas -->
         <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Briefcase class="text-indigo-600" :size="18" /> Búsquedas Activas
+              <Briefcase class="text-indigo-600" :size="18" /> BÃºsquedas Activas
             </h2>
             <router-link to="/positions" class="text-xs text-indigo-600 font-semibold hover:underline">Ver todas</router-link>
           </div>
@@ -209,7 +209,7 @@ onMounted(loadDashboard);
             >
               <div>
                 <h3 class="text-xs font-bold text-slate-900">{{ pos.title }}</h3>
-                <p class="text-[11px] text-slate-500">{{ pos.company?.name }} • {{ pos.seniority }}</p>
+                <p class="text-[11px] text-slate-500">{{ pos.company?.name }} â€¢ {{ pos.seniority }}</p>
               </div>
 
               <div class="flex items-center gap-3">

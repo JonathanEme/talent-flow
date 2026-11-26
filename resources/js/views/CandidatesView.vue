@@ -131,7 +131,7 @@ const saveCandidate = async () => {
         <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
           <Users class="text-sky-400" :size="24" /> Base de Candidatos
         </h1>
-        <p class="text-slate-400 text-sm">Directorio global de talento y habilidades técnicas.</p>
+        <p class="text-slate-400 text-sm">Directorio global de talento y habilidades tÃ©cnicas.</p>
       </div>
 
       <button 
@@ -150,7 +150,7 @@ const saveCandidate = async () => {
       </label>
       <input v-model="filters.skill" @keyup.enter="handleSearch" type="search" aria-label="Filtrar por skill" placeholder="Skill" class="bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm focus:ring-2 focus:ring-sky-500" />
       <div class="flex gap-2">
-        <input v-model="filters.location" @keyup.enter="handleSearch" type="search" aria-label="Filtrar por ubicación" placeholder="Ubicación" class="bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm w-full focus:ring-2 focus:ring-sky-500" />
+        <input v-model="filters.location" @keyup.enter="handleSearch" type="search" aria-label="Filtrar por ubicaciÃ³n" placeholder="UbicaciÃ³n" class="bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm w-full focus:ring-2 focus:ring-sky-500" />
         <button type="button" @click="handleSearch" class="px-3 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium">Filtrar</button>
         <button type="button" @click="clearFilters" class="px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium">Limpiar</button>
       </div>
@@ -162,7 +162,7 @@ const saveCandidate = async () => {
       :error="error"
       :empty="candidates.length === 0"
       loading-label="Cargando base de datos..."
-      empty-label="No hay candidatos que coincidan con la búsqueda."
+      empty-label="No hay candidatos que coincidan con la bÃºsqueda."
       @retry="load"
     />
 
@@ -197,7 +197,7 @@ const saveCandidate = async () => {
           <span v-if="cand.salary_expectation" class="text-emerald-400 font-medium flex items-center">
             <DollarSign :size="13" /> ${{ cand.salary_expectation }}
           </span>
-          <span v-else class="text-slate-500">Sin pretensión fijada</span>
+          <span v-else class="text-slate-500">Sin pretensiÃ³n fijada</span>
         </div>
       </div>
       </div>
@@ -206,11 +206,11 @@ const saveCandidate = async () => {
     </template>
 
     <!-- Modal Nuevo Candidato -->
-    <div v-if="showCreateModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+    <div v-if="showCreateModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-xl w-full p-6 shadow-xl max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="candidate-modal-title">
         <div class="flex justify-between items-center mb-4">
           <h3 id="candidate-modal-title" class="text-lg font-bold text-white">Registrar Candidato</h3>
-          <button type="button" aria-label="Cerrar" @click="showCreateModal = false" class="text-slate-400 hover:text-white">
+          <button type="button" aria-label="Cerrar" @click="showCreateModal = false" class="text-slate-400 hover:text-slate-700">
             <X :size="18" />
           </button>
         </div>
@@ -218,65 +218,65 @@ const saveCandidate = async () => {
         <form @submit.prevent="saveCandidate" class="space-y-4 text-xs">
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-slate-300 font-medium mb-1">Nombre</label>
-              <input type="text" v-model="form.first_name" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-sky-500" />
+              <label class="block text-slate-700 font-medium mb-1">Nombre</label>
+              <input type="text" v-model="form.first_name" required class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-slate-700 outline-none focus:ring-2 focus:ring-sky-500" />
             </div>
             <div>
-              <label class="block text-slate-300 font-medium mb-1">Apellido</label>
-              <input type="text" v-model="form.last_name" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-sky-500" />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-slate-300 font-medium mb-1">Email</label>
-              <input type="email" v-model="form.email" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-sky-500" />
-            </div>
-            <div>
-              <label class="block text-slate-300 font-medium mb-1">Teléfono</label>
-              <input type="text" v-model="form.phone" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-sky-500" />
+              <label class="block text-slate-700 font-medium mb-1">Apellido</label>
+              <input type="text" v-model="form.last_name" required class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-slate-700 outline-none focus:ring-2 focus:ring-sky-500" />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-slate-300 font-medium mb-1">Ubicación</label>
-              <input type="text" v-model="form.location" placeholder="Ciudad, País" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-sky-500" />
+              <label class="block text-slate-700 font-medium mb-1">Email</label>
+              <input type="email" v-model="form.email" required class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-slate-700 outline-none focus:ring-2 focus:ring-sky-500" />
             </div>
             <div>
-              <label class="block text-slate-300 font-medium mb-1">Pretensión Salarial (USD)</label>
-              <input type="number" v-model="form.salary_expectation" placeholder="2000" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-sky-500" />
+              <label class="block text-slate-700 font-medium mb-1">TelÃ©fono</label>
+              <input type="text" v-model="form.phone" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-slate-700 outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-slate-700 font-medium mb-1">UbicaciÃ³n</label>
+              <input type="text" v-model="form.location" placeholder="Ciudad, PaÃ­s" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-slate-700 outline-none focus:ring-2 focus:ring-sky-500" />
+            </div>
+            <div>
+              <label class="block text-slate-700 font-medium mb-1">PretensiÃ³n Salarial (USD)</label>
+              <input type="number" v-model="form.salary_expectation" placeholder="2000" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-slate-700 outline-none focus:ring-2 focus:ring-sky-500" />
             </div>
           </div>
 
           <div>
-            <label class="block text-slate-300 font-medium mb-1">Resumen Profesional</label>
-            <textarea v-model="form.summary" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white outline-none focus:border-sky-500"></textarea>
+            <label class="block text-slate-700 font-medium mb-1">Resumen Profesional</label>
+            <textarea v-model="form.summary" rows="2" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-slate-700 outline-none focus:ring-2 focus:ring-sky-500"></textarea>
           </div>
 
-          <!-- Skills Dinámicas -->
-          <div class="pt-2 border-t border-slate-800">
+          <!-- Skills DinÃ¡micas -->
+          <div class="pt-2 border-t border-slate-200">
             <div class="flex justify-between items-center mb-2">
-              <span class="font-bold text-slate-300">Habilidades Técnicas</span>
+              <span class="font-bold text-slate-300">Habilidades TÃ©cnicas</span>
               <button type="button" @click="addSkillField" class="text-sky-400 hover:text-sky-300 text-xs font-semibold">+ Agregar Skill</button>
             </div>
 
-            <div v-for="(sk, idx) in form.selected_skills" :key="idx" class="flex items-center gap-2 mb-2 bg-slate-950 p-2 rounded-lg border border-slate-800">
-              <select v-model="sk.skill_id" class="bg-slate-900 border border-slate-700 text-white rounded p-1.5 flex-1" :aria-label="`Habilidad ${idx + 1}`">
+            <div v-for="(sk, idx) in form.selected_skills" :key="idx" class="flex items-center gap-2 mb-2 bg-slate-50 p-2 rounded-lg border border-slate-200">
+              <select v-model="sk.skill_id" class="bg-white border border-slate-300 text-slate-700 rounded p-1.5 flex-1" :aria-label="`Habilidad ${idx + 1}`">
                 <option :value="0" disabled>Selecciona habilidad</option>
                 <option v-for="s in availableSkills" :key="s.id" :value="s.id">{{ s.name }}</option>
               </select>
-              <input type="number" v-model="sk.years_experience" min="1" max="20" placeholder="Años" class="w-16 bg-slate-900 border border-slate-700 text-white rounded p-1.5 text-center" />
+              <input type="number" v-model="sk.years_experience" min="1" max="20" placeholder="AÃ±os" class="w-16 bg-white border border-slate-300 text-slate-700 rounded p-1.5 text-center" />
               <button type="button" @click="removeSkillField(idx)" class="text-rose-400 hover:text-rose-300 px-1">
                 <X :size="15" />
               </button>
             </div>
           </div>
 
-          <p v-if="formError" class="rounded-lg bg-rose-500/10 p-2.5 text-xs text-rose-300" role="alert">{{ formError }}</p>
+          <p v-if="formError" class="rounded-lg bg-rose-50 border border-rose-200 p-2.5 text-xs text-rose-700" role="alert">{{ formError }}</p>
 
           <div class="flex justify-end gap-2 pt-3">
-            <button type="button" @click="showCreateModal = false" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300">Cancelar</button>
+            <button type="button" @click="showCreateModal = false" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
             <button type="submit" :disabled="saving" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold">
               {{ saving ? 'Guardando...' : 'Crear Candidato' }}
             </button>

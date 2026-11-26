@@ -48,7 +48,14 @@ const feedbackForm = ref({
 const dateFormatter = new Intl.DateTimeFormat('es', { dateStyle: 'medium', timeStyle: 'short' });
 const formatDate = (value: string) => dateFormatter.format(new Date(value));
 
-const applyFilters = async () => { page.value = 1; await load(); };
+const applyFilters = async () => {
+  if (filters.from && filters.to && filters.to < filters.from) {
+    notifyError('La fecha "Hasta" debe ser igual o posterior a "Desde".');
+    return;
+  }
+  page.value = 1;
+  await load();
+};
 const clearFilters = async () => { filters.status = ''; filters.type = ''; filters.from = ''; filters.to = ''; await applyFilters(); };
 
 onMounted(async () => {
@@ -56,7 +63,7 @@ onMounted(async () => {
 });
 
 const handleCreated = async () => {
-  notifySuccess('Entrevista agendada con éxito.');
+  notifySuccess('Entrevista agendada con Ã©xito.');
   await load();
 };
 
@@ -81,7 +88,7 @@ const submitFeedback = async () => {
   try {
     await apiClient.post(`/interviews/${selectedInterview.value.id}/feedback`, feedbackForm.value);
     showFeedbackModal.value = false;
-    notifySuccess('Evaluación registrada correctamente.');
+    notifySuccess('EvaluaciÃ³n registrada correctamente.');
     await load();
   } catch (caught) {
     formError.value = errorMessage(caught, 'Error al guardar el feedback.');
@@ -97,9 +104,9 @@ const submitFeedback = async () => {
     <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-          <Calendar class="text-indigo-600" :size="24" /> Agenda de Entrevistas y Rúbricas
+          <Calendar class="text-indigo-600" :size="24" /> Agenda de Entrevistas y RÃºbricas
         </h1>
-        <p class="text-slate-500 text-sm">Monitorea sesiones agendadas y registra feedback de evaluación.</p>
+        <p class="text-slate-500 text-sm">Monitorea sesiones agendadas y registra feedback de evaluaciÃ³n.</p>
       </div>
       <button
         type="button"
@@ -111,10 +118,10 @@ const submitFeedback = async () => {
     </div>
 
     <div class="mb-6 grid grid-cols-1 md:grid-cols-5 gap-3">
-      <select v-model="filters.status" aria-label="Estado entrevista" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm"><option value="">Todos los estados</option><option value="scheduled">Programada</option><option value="completed">Completada</option><option value="canceled">Cancelada</option><option value="no_show">No asistió</option></select>
-      <select v-model="filters.type" aria-label="Tipo entrevista" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm"><option value="">Todos los tipos</option><option value="screening">Screening</option><option value="hr">HR</option><option value="technical">Técnica</option><option value="client">Cliente</option><option value="final">Final</option></select>
+      <select v-model="filters.status" aria-label="Estado entrevista" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm"><option value="">Todos los estados</option><option value="scheduled">Programada</option><option value="completed">Completada</option><option value="canceled">Cancelada</option><option value="no_show">No asistiÃ³</option></select>
+      <select v-model="filters.type" aria-label="Tipo entrevista" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm"><option value="">Todos los tipos</option><option value="screening">Screening</option><option value="hr">HR</option><option value="technical">TÃ©cnica</option><option value="client">Cliente</option><option value="final">Final</option></select>
       <input v-model="filters.from" type="date" aria-label="Desde" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm" />
-      <input v-model="filters.to" type="date" aria-label="Hasta" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm" />
+      <input v-model="filters.to" type="date" aria-label="Hasta" :min="filters.from || undefined" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm" />
       <div class="flex gap-2"><button type="button" @click="applyFilters" class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm">Filtrar</button><button type="button" @click="clearFilters" class="px-3 py-2 rounded-lg bg-slate-100 text-sm">Limpiar</button></div>
     </div>
 
@@ -174,7 +181,7 @@ const submitFeedback = async () => {
               <Star :size="18" fill="currentColor" /> {{ item.feedbacks[0].score }}/10
             </span>
             <span class="text-[10px] text-slate-500 uppercase">{{ item.feedbacks[0].recommendation }}</span>
-            <span class="text-[10px] text-slate-500 uppercase">{{ item.feedbacks.length }} evaluación(es)</span>
+            <span class="text-[10px] text-slate-500 uppercase">{{ item.feedbacks.length }} evaluaciÃ³n(es)</span>
           </div>
 
           <button 
@@ -195,7 +202,7 @@ const submitFeedback = async () => {
     <div v-if="showFeedbackModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div class="bg-white border border-slate-200 rounded-xl max-w-lg w-full p-6 shadow-xl" role="dialog" aria-modal="true" aria-labelledby="feedback-modal-title">
         <div class="flex justify-between items-center mb-4">
-          <h3 id="feedback-modal-title" class="text-lg font-bold text-slate-900">Rúbrica de Entrevista</h3>
+          <h3 id="feedback-modal-title" class="text-lg font-bold text-slate-900">RÃºbrica de Entrevista</h3>
           <button type="button" aria-label="Cerrar" @click="showFeedbackModal = false" class="text-slate-400 hover:text-slate-600">
             <X :size="18" />
           </button>
@@ -203,7 +210,7 @@ const submitFeedback = async () => {
 
         <form @submit.prevent="submitFeedback" class="space-y-4 text-xs">
           <div>
-            <label class="block text-slate-700 font-medium mb-1">Calificación Global (1 a 10)</label>
+            <label class="block text-slate-700 font-medium mb-1">CalificaciÃ³n Global (1 a 10)</label>
             <input type="number" v-model="feedbackForm.score" min="1" max="10" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900 font-bold text-base outline-none focus:border-sky-500" />
           </div>
 
@@ -218,7 +225,7 @@ const submitFeedback = async () => {
 
           <div>
             <label class="block text-slate-700 font-medium mb-1">Fortalezas</label>
-            <textarea v-model="feedbackForm.strengths" rows="2" placeholder="Aspectos técnicos y actitudinales destacados..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900"></textarea>
+            <textarea v-model="feedbackForm.strengths" rows="2" placeholder="Aspectos tÃ©cnicos y actitudinales destacados..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-slate-900"></textarea>
           </div>
 
           <div>
@@ -236,7 +243,7 @@ const submitFeedback = async () => {
           <div class="flex justify-end gap-2 pt-2">
             <button type="button" @click="showFeedbackModal = false" class="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">Cancelar</button>
             <button type="submit" :disabled="savingFeedback" class="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">
-              {{ savingFeedback ? 'Guardando...' : 'Guardar Evaluación' }}
+              {{ savingFeedback ? 'Guardando...' : 'Guardar EvaluaciÃ³n' }}
             </button>
           </div>
         </form>
