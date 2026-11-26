@@ -32,6 +32,7 @@ TalentFlow es un **ATS (Applicant Tracking System)** para centralizar posiciones
 | Frontend | Vite + plugin Vue + plugin Laravel | `^7.0` / `^6.0` / `^2.0` |
 | Estilos | Tailwind CSS + PostCSS + Autoprefixer | `^3.4` |
 | Cliente HTTP | Axios | `^1.20` |
+| Documentación | Redoc standalone (servido por Vite) | `^2.5` |
 | Base de datos | SQLite por defecto (PostgreSQL/MySQL soportados por configuración) | — |
 | Tests | PHPUnit | `^11.5` |
 | Estilo PHP | Laravel Pint | `^1.24` |
@@ -101,20 +102,25 @@ talent-flow/
 │   ├── css/app.css
 │   ├── js/
 │   │   ├── api/                     # client, auth, token, pagination
+│   │   ├── api-docs.ts              # arranque de Redoc
 │   │   ├── components/              # StatePanel, PaginationControls, ToastHost, InterviewFormModal
 │   │   ├── composables/             # usePaginatedList, useNotifications
 │   │   ├── router/index.ts
 │   │   ├── types/ats.ts
+│   │   ├── types/redoc-standalone.d.ts
 │   │   └── views/                   # Dashboard, Positions, Pipeline, Candidates, Companies,
 │   │                                # Interviews, Offers, Timeline, Login
-│   └── views/welcome.blade.php      # montaje de la SPA
+│   └── views/
+│       ├── api-docs.blade.php       # página de documentación interactiva
+│       └── welcome.blade.php        # montaje de la SPA
 ├── routes/
 │   ├── api.php                      # API v1
-│   └── web.php                      # catch-all SPA
+│   └── web.php                      # /api-docs, /api-docs.json y catch-all SPA
 ├── tests/
 │   ├── Concerns/CreatesAtsData.php
 │   ├── Feature/Api/                 # contrato, auth, tenant, lifecycle, matching, calidad
-│   └── Feature/Console/             # generación de OpenAPI
+│   ├── Feature/Console/             # generación de OpenAPI
+│   └── Feature/ApiDocumentationTest.php
 ├── .github/workflows/quality.yml
 ├── composer.json
 ├── package.json
@@ -269,13 +275,17 @@ El comando escribe `docs/openapi.json` e incluye paths, operaciones, parámetros
 php artisan docs:openapi --output=ruta/archivo.json
 ```
 
-> La especificación describe contratos y seguridad; las respuestas usan esquemas genéricos. La visualización interactiva (Swagger UI/Redoc) sigue pendiente.
+La documentación interactiva está disponible en **`/api-docs`**: una vista Blade carga Redoc de forma local (sin CDN) desde el bundle `redoc.standalone.js` copiado por Vite y consume la especificación servida en **`/api-docs.json`**.
+
+> La especificación describe contratos y seguridad; las respuestas usan esquemas genéricos. Definir schemas concretos de request/response es una mejora pendiente.
 
 ---
 
 ## Rutas de la SPA
 
 `/login`, `/`, `/positions`, `/positions/create`, `/positions/:id`, `/pipeline`, `/candidates`, `/candidates/:id`, `/companies`, `/interviews`, `/offers`, `/applications/:id/timeline`.
+
+La documentación interactiva `/api-docs` se sirve fuera del router de Vue; su especificación se expone en `/api-docs.json`.
 
 ---
 
@@ -363,7 +373,7 @@ npm run build       # Vite build
 composer quality    # los cuatro anteriores en secuencia
 ```
 
-La cobertura incluye contrato de API y envelope, autenticación y logout, aislamiento por empresa, ciclo de vida de postulaciones (incluidos retrocesos y timeline), matching ponderado y flags de postulación, dashboard, sincronización de skills/requisitos, entrevistas y feedback, ofertas y generación de la especificación OpenAPI.
+La cobertura incluye contrato de API y envelope, autenticación y logout, aislamiento por empresa, ciclo de vida de postulaciones (incluidos retrocesos y timeline), matching ponderado y flags de postulación, dashboard, sincronización de skills/requisitos, entrevistas y feedback, ofertas, generación de la especificación OpenAPI y las rutas que sirven la documentación interactiva.
 
 El workflow `.github/workflows/quality.yml` ejecuta los mismos chequeos en `push` a `main` y en pull requests, con PHP 8.2 y Node 20.
 
@@ -378,11 +388,11 @@ El workflow `.github/workflows/quality.yml` ejecuta los mismos chequeos en `push
 
 ## Estado actual y mejoras pendientes
 
-Ya implementado y documentado arriba: autenticación Sanctum, dashboard, workflow de etapas y ofertas, matching con filtros, notificaciones toast y pipeline interactivo.
+Ya implementado y documentado arriba: autenticación Sanctum, dashboard, workflow de etapas y ofertas, matching con filtros, notificaciones toast, pipeline interactivo, especificación OpenAPI generada y documentación interactiva en `/api-docs`.
 
 Pendiente o susceptible de mejora:
 
-- Visualización interactiva de la especificación (Swagger UI/Redoc) sobre `docs/openapi.json`.
+- Schemas concretos de request/response en OpenAPI (actualmente son genéricos).
 - Autorización más granular por rol además del aislamiento empresa/global.
 - Notificaciones persistentes/backend (actualmente solo toasts en la UI; correo en modo `log`).
 - Filtros avanzados y reportes/métricas extendidas.
